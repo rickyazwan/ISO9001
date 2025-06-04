@@ -2800,7 +2800,10 @@ const ReportsAnalytics = () => {
                   <option value="lastYear">Last Year</option>
                   <option value="custom">Custom Range</option>
                 </select>
-                <button className="flex items-center px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors">
+                <button 
+                  onClick={() => exportData(complianceData, 'compliance-report', 'excel')}
+                  className="flex items-center px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
+                >
                   <Download size={16} className="mr-2" />
                   Export Compliance Report
                 </button>
