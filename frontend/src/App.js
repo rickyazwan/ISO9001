@@ -3320,31 +3320,8 @@ const ReportsAnalytics = () => {
                 </div>
               </div>
 
-              {/* Recent Reports */}
-              <div className="bg-gray-50 rounded-lg p-6">
-                <div className="flex justify-between items-center mb-4">
-                  <h3 className="text-lg font-semibold">Recent Reports</h3>
-                  <button className="text-blue-600 hover:text-blue-800 text-sm font-medium">View All</button>
-                </div>
-                <div className="space-y-3">
-                  {recentReports.map((report) => (
-                    <div key={report.id} className="bg-white rounded-lg p-4 flex items-center justify-between">
-                      <div>
-                        <h4 className="font-medium text-gray-900">{report.name}</h4>
-                        <p className="text-sm text-gray-500">{report.type} • Generated {report.generated}</p>
-                      </div>
-                      <div className="flex items-center gap-3">
-                        <span className="px-2 py-1 bg-blue-100 text-blue-800 rounded-full text-xs font-medium">
-                          {report.format}
-                        </span>
-                        <button className="text-blue-600 hover:text-blue-800">
-                          <Download size={16} />
-                        </button>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
+              {/* Enhanced Recent Reports with Download Functionality */}
+              <EnhancedRecentReports reports={sampleData.recentReports} />
             </div>
           )}
 
