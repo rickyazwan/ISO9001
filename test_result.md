@@ -116,6 +116,9 @@
         - working: true
           agent: "main"
           comment: "Basic FastAPI server with status check endpoints running successfully"
+        - working: true
+          agent: "testing"
+          comment: "Verified backend server is running properly. All API endpoints (/api/, POST /api/status, GET /api/status) are accessible and working correctly. MongoDB connection is working as we were able to create and retrieve status checks. CORS middleware is configured correctly."
 
 ## frontend:
   - task: "Complete ISO 9001 Healthcare QMS UI with 8 modules"
