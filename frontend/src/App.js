@@ -2195,6 +2195,9 @@ const AuditManagement = () => {
 
   return (
     <div className="space-y-6">
+      {/* Role Switcher for Testing */}
+      <RoleSwitcher />
+
       {/* Header */}
       <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
         <div>
@@ -2273,7 +2276,7 @@ const AuditManagement = () => {
           </div>
         </div>
 
-        {/* Audits Table */}
+        {/* Enhanced Audits Table with Role-Based Actions */}
         <div className="overflow-x-auto">
           <table className="w-full text-sm text-left">
             <thead className="text-xs text-gray-700 uppercase bg-gray-50">
@@ -2289,55 +2292,12 @@ const AuditManagement = () => {
               </tr>
             </thead>
             <tbody>
-              {filteredAudits.map((audit) => (
-                <tr key={audit.id} className="bg-white border-b hover:bg-gray-50">
-                  <td className="px-6 py-4 font-medium text-gray-900">{audit.facility}</td>
-                  <td className="px-6 py-4">
-                    <span className={clsx(
-                      "px-2 py-1 rounded-full text-xs font-medium",
-                      audit.type === 'Internal' ? 'bg-blue-100 text-blue-800' : 'bg-purple-100 text-purple-800'
-                    )}>
-                      {audit.type}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4">{audit.date}</td>
-                  <td className="px-6 py-4">{audit.auditor}</td>
-                  <td className="px-6 py-4">
-                    <span className={clsx(
-                      "px-2 py-1 rounded-full text-xs font-medium",
-                      audit.status === 'Completed' ? 'bg-green-100 text-green-800' :
-                      audit.status === 'In Progress' ? 'bg-yellow-100 text-yellow-800' :
-                      'bg-blue-100 text-blue-800'
-                    )}>
-                      {audit.status}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4">
-                    {audit.score ? (
-                      <span className={clsx(
-                        "font-medium",
-                        audit.score >= 90 ? 'text-green-600' :
-                        audit.score >= 80 ? 'text-yellow-600' : 'text-red-600'
-                      )}>
-                        {audit.score}%
-                      </span>
-                    ) : '-'}
-                  </td>
-                  <td className="px-6 py-4">{audit.findings}</td>
-                  <td className="px-6 py-4">
-                    <div className="flex items-center space-x-2">
-                      <button className="text-blue-600 hover:text-blue-800">
-                        <Eye size={16} />
-                      </button>
-                      <button className="text-gray-600 hover:text-gray-800">
-                        <Edit size={16} />
-                      </button>
-                      <button className="text-red-600 hover:text-red-800">
-                        <Trash2 size={16} />
-                      </button>
-                    </div>
-                  </td>
-                </tr>
+              {filteredAudits.map((audit, index) => (
+                <AuditTableRow 
+                  key={audit.id} 
+                  audit={audit} 
+                  isLast={index === filteredAudits.length - 1}
+                />
               ))}
             </tbody>
           </table>
