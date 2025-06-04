@@ -134,6 +134,70 @@ const useLanguage = () => {
   return context;
 };
 
+// Authentication Context
+const AuthContext = createContext();
+
+const AuthProvider = ({ children }) => {
+  const [user, setUser] = useState(null);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [authMode, setAuthMode] = useState('login'); // 'login' or 'signup'
+
+  const login = (userData) => {
+    setUser(userData);
+    setIsAuthenticated(true);
+    // In a real app, you'd store auth token in localStorage/sessionStorage
+    localStorage.setItem('user', JSON.stringify(userData));
+  };
+
+  const signup = (userData) => {
+    setUser(userData);
+    setIsAuthenticated(true);
+    localStorage.setItem('user', JSON.stringify(userData));
+  };
+
+  const logout = () => {
+    setUser(null);
+    setIsAuthenticated(false);
+    localStorage.removeItem('user');
+  };
+
+  // Check for existing session on mount
+  React.useEffect(() => {
+    const storedUser = localStorage.getItem('user');
+    if (storedUser) {
+      try {
+        const userData = JSON.parse(storedUser);
+        setUser(userData);
+        setIsAuthenticated(true);
+      } catch (error) {
+        localStorage.removeItem('user');
+      }
+    }
+  }, []);
+
+  return (
+    <AuthContext.Provider value={{
+      user,
+      isAuthenticated,
+      authMode,
+      setAuthMode,
+      login,
+      signup,
+      logout
+    }}>
+      {children}
+    </AuthContext.Provider>
+  );
+};
+
+const useAuth = () => {
+  const context = useContext(AuthContext);
+  if (!context) {
+    throw new Error('useAuth must be used within AuthProvider');
+  }
+  return context;
+};
+
 // Modal Context
 const ModalContext = createContext();
 
