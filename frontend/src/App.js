@@ -1253,6 +1253,74 @@ const ReportIncidentForm = ({ onClose }) => {
         : [...prev.factors, factor]
     }));
   };
+  const [formData, setFormData] = useState({
+    title: '',
+    incidentType: 'medication_error',
+    severity: 'medium',
+    facility: '',
+    location: '',
+    dateOccurred: '',
+    timeOccurred: '',
+    description: '',
+    immediateAction: '',
+    patientInvolved: true,
+    patientId: '',
+    patientAge: '',
+    patientGender: '',
+    staffInvolved: [],
+    witnesses: '',
+    equipmentInvolved: '',
+    medications: '',
+    factors: [],
+    injuries: 'none',
+    injuryDescription: '',
+    reportedBy: '',
+    reporterRole: '',
+    reporterContact: '',
+    supervisorNotified: false,
+    familyNotified: false,
+    riskLevel: 'medium',
+    followUpRequired: true,
+    attachments: []
+  });
+
+  const incidentTypes = [
+    { value: 'medication_error', label: 'Medication Error' },
+    { value: 'patient_fall', label: 'Patient Fall' },
+    { value: 'equipment_malfunction', label: 'Equipment Malfunction' },
+    { value: 'hospital_acquired_infection', label: 'Hospital Acquired Infection' },
+    { value: 'surgical_complication', label: 'Surgical Complication' },
+    { value: 'diagnostic_error', label: 'Diagnostic Error' },
+    { value: 'communication_failure', label: 'Communication Failure' },
+    { value: 'security_incident', label: 'Security Incident' },
+    { value: 'fire_safety', label: 'Fire/Safety Incident' },
+    { value: 'other', label: 'Other' }
+  ];
+
+  const facilities = ['General Hospital', 'Emergency Center', 'Pediatric Ward', 'Outpatient Clinic', 'Surgical Center'];
+  const staffRoles = ['Physician', 'Nurse', 'Pharmacist', 'Technician', 'Administrator', 'Support Staff'];
+  const contributingFactors = [
+    'Staffing Issues', 'Communication Problems', 'Equipment Issues', 'Training Deficiency',
+    'Policy/Procedure Issues', 'Environmental Factors', 'Patient Condition', 'Time Pressure'
+  ];
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    setTimeout(() => {
+      const incidentId = 'INC-' + new Date().getFullYear() + '-' + String(Math.floor(Math.random() * 1000)).padStart(3, '0');
+      alert(`Incident "${incidentId}" has been reported successfully! Investigation team will be notified.`);
+      onClose();
+    }, 1000);
+  };
+
+  const handleFactorChange = (factor) => {
+    setFormData(prev => ({
+      ...prev,
+      factors: prev.factors.includes(factor)
+        ? prev.factors.filter(f => f !== factor)
+        : [...prev.factors, factor]
+    }));
+  };
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
