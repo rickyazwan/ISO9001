@@ -7362,13 +7362,16 @@ const QualityDocuments = () => {
         </div>
         <div className="flex gap-3">
           <button 
-            onClick={() => openModal('uploadDocument', <div>Upload Document Form</div>)}
+            onClick={() => openModal('uploadDocument')}
             className="bg-blue-600 text-white px-6 py-2 rounded-lg font-medium hover:bg-blue-700 transition-colors"
           >
             <Upload size={16} className="inline mr-2" />
             Upload Document
           </button>
-          <button className="bg-green-600 text-white px-6 py-2 rounded-lg font-medium hover:bg-green-700 transition-colors">
+          <button 
+            onClick={() => openModal('bulkExportDocuments')}
+            className="bg-green-600 text-white px-6 py-2 rounded-lg font-medium hover:bg-green-700 transition-colors"
+          >
             <Download size={16} className="inline mr-2" />
             Bulk Export
           </button>
