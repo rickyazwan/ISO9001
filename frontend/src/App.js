@@ -4751,108 +4751,727 @@ const CalendarScheduling = () => {
 
 // ISO 9001 Reference Guide Component
 const ISO9001ReferenceGuide = () => {
+  const { openModal } = useModal();
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedClause, setSelectedClause] = useState(null);
   const [activeTab, setActiveTab] = useState('clauses');
+  const [checkedItems, setCheckedItems] = useState({});
+  const [selectedChecklist, setSelectedChecklist] = useState(null);
 
+  // Complete ISO 9001:2015 Clauses
   const iso9001Clauses = [
     {
       number: '4.1',
       title: 'Understanding the organization and its context',
       description: 'The organization shall determine external and internal issues that are relevant to its purpose and strategic direction.',
-      healthcareExample: 'Healthcare organizations must consider regulatory requirements, patient demographics, technology changes, and competitive landscape.',
+      healthcareExample: 'Healthcare organizations must consider regulatory requirements (FDA, CMS), patient demographics, technology changes, competitive landscape, and public health trends.',
       auditQuestions: [
         'How does the organization identify internal and external issues?',
         'What process is used to monitor and review these issues?',
-        'How do these issues influence the QMS design?'
+        'How do these issues influence the QMS design?',
+        'Are stakeholder needs considered in context analysis?'
       ],
       commonNCRs: [
         'Lack of documented process for identifying context',
         'No evidence of regular review of external/internal issues',
-        'Context not linked to QMS scope and objectives'
+        'Context not linked to QMS scope and objectives',
+        'Stakeholder analysis incomplete or outdated'
       ]
     },
     {
       number: '4.2',
       title: 'Understanding the needs and expectations of interested parties',
       description: 'The organization shall determine the interested parties that are relevant to the quality management system.',
-      healthcareExample: 'Interested parties include patients, families, regulatory bodies, staff, suppliers, and community health organizations.',
+      healthcareExample: 'Interested parties include patients, families, regulatory bodies, staff, suppliers, community health organizations, insurance providers, and accreditation bodies.',
       auditQuestions: [
         'Who are the identified interested parties?',
         'How are their needs and expectations determined?',
-        'What is the process for monitoring changes in requirements?'
+        'What is the process for monitoring changes in requirements?',
+        'How are conflicting stakeholder requirements resolved?'
       ],
       commonNCRs: [
         'Incomplete identification of interested parties',
         'No process to monitor changing requirements',
-        'Stakeholder needs not reflected in QMS'
+        'Stakeholder needs not reflected in QMS',
+        'Missing key healthcare stakeholders like patients or regulators'
+      ]
+    },
+    {
+      number: '4.3',
+      title: 'Determining the scope of the quality management system',
+      description: 'The organization shall determine the boundaries and applicability of the quality management system.',
+      healthcareExample: 'QMS scope may include patient care services, diagnostic services, pharmaceutical services, emergency care, and support services within defined facilities.',
+      auditQuestions: [
+        'What services and processes are included in the QMS scope?',
+        'Are exclusions clearly justified and documented?',
+        'How does the scope relate to the organization\'s context?',
+        'Is the scope available to interested parties?'
+      ],
+      commonNCRs: [
+        'QMS scope not clearly defined or documented',
+        'Exclusions not properly justified',
+        'Scope not aligned with organizational context',
+        'Key healthcare processes excluded without justification'
+      ]
+    },
+    {
+      number: '4.4',
+      title: 'Quality management system and its processes',
+      description: 'The organization shall establish, implement, maintain and continually improve a quality management system.',
+      healthcareExample: 'Healthcare QMS includes patient care processes, support processes (sterilization, pharmacy), and management processes (planning, review).',
+      auditQuestions: [
+        'Are all QMS processes identified and documented?',
+        'How do processes interact and interface?',
+        'What criteria are used to monitor processes?',
+        'How is process effectiveness measured?'
+      ],
+      commonNCRs: [
+        'Process interactions not clearly defined',
+        'Missing process documentation or procedures',
+        'No process performance criteria established',
+        'Process effectiveness not monitored'
+      ]
+    },
+    {
+      number: '5.1',
+      title: 'Leadership and commitment',
+      description: 'Top management shall demonstrate leadership and commitment with respect to the quality management system.',
+      healthcareExample: 'Healthcare executives must demonstrate commitment through resource allocation, policy setting, patient safety focus, and staff engagement.',
+      auditQuestions: [
+        'How does top management demonstrate QMS commitment?',
+        'Is quality policy communicated and understood?',
+        'Are adequate resources provided for the QMS?',
+        'How does leadership promote customer focus?'
+      ],
+      commonNCRs: [
+        'No evidence of top management QMS commitment',
+        'Quality policy not communicated effectively',
+        'Inadequate resources allocated to quality',
+        'Leadership not engaged in quality reviews'
+      ]
+    },
+    {
+      number: '5.2',
+      title: 'Policy',
+      description: 'Top management shall establish, implement and maintain a quality policy.',
+      healthcareExample: 'Healthcare quality policy should address patient safety, regulatory compliance, continuous improvement, and staff competency.',
+      auditQuestions: [
+        'Is the quality policy appropriate to the organization?',
+        'Does the policy commit to continual improvement?',
+        'How is the policy communicated?',
+        'Is the policy reviewed and updated?'
+      ],
+      commonNCRs: [
+        'Quality policy not appropriate to healthcare context',
+        'Policy not effectively communicated to staff',
+        'No commitment to continual improvement stated',
+        'Policy not regularly reviewed or updated'
+      ]
+    },
+    {
+      number: '5.3',
+      title: 'Organizational roles, responsibilities and authorities',
+      description: 'Top management shall ensure that responsibilities and authorities for relevant roles are assigned and communicated.',
+      healthcareExample: 'Clear roles for quality manager, clinical directors, department heads, safety officers, and compliance coordinators.',
+      auditQuestions: [
+        'Are quality roles and responsibilities clearly defined?',
+        'How are roles and authorities communicated?',
+        'Who has authority for QMS decisions?',
+        'Are there backup arrangements for key roles?'
+      ],
+      commonNCRs: [
+        'Roles and responsibilities not clearly defined',
+        'Quality authorities not properly delegated',
+        'No backup arrangements for key positions',
+        'Staff unaware of their quality responsibilities'
       ]
     },
     {
       number: '6.1',
       title: 'Actions to address risks and opportunities',
       description: 'When planning for the QMS, the organization shall consider issues and requirements, and determine risks and opportunities.',
-      healthcareExample: 'Healthcare risks include patient safety incidents, regulatory non-compliance, equipment failures, and staff competency gaps.',
+      healthcareExample: 'Healthcare risks include patient safety incidents, regulatory non-compliance, equipment failures, staff competency gaps, and infection control.',
       auditQuestions: [
         'How does the organization identify risks and opportunities?',
         'What actions have been planned to address them?',
-        'How is the effectiveness of actions evaluated?'
+        'How is the effectiveness of actions evaluated?',
+        'Are risk controls proportionate to impact?'
       ],
       commonNCRs: [
-        'Risk assessment not comprehensive',
+        'Risk assessment not comprehensive or current',
         'No clear link between risks and planned actions',
-        'Effectiveness of risk actions not monitored'
+        'Effectiveness of risk actions not monitored',
+        'Patient safety risks not adequately addressed'
+      ]
+    },
+    {
+      number: '6.2',
+      title: 'Quality objectives and planning to achieve them',
+      description: 'The organization shall establish quality objectives at relevant functions, levels and processes.',
+      healthcareExample: 'Healthcare quality objectives might include patient satisfaction targets, infection rates, medication error reduction, and staff competency goals.',
+      auditQuestions: [
+        'Are quality objectives measurable and monitored?',
+        'How do objectives align with quality policy?',
+        'What resources are allocated to achieve objectives?',
+        'How is progress toward objectives tracked?'
+      ],
+      commonNCRs: [
+        'Quality objectives not measurable or specific',
+        'No plans to achieve stated objectives',
+        'Objectives not monitored or reviewed',
+        'Objectives not aligned with patient care goals'
+      ]
+    },
+    {
+      number: '6.3',
+      title: 'Planning of changes',
+      description: 'When the organization determines the need for changes to the quality management system, the changes shall be carried out in a planned manner.',
+      healthcareExample: 'Planning for new medical technologies, regulatory changes, facility expansions, or service line additions.',
+      auditQuestions: [
+        'How are QMS changes planned and controlled?',
+        'Are potential consequences of changes evaluated?',
+        'How is change implementation monitored?',
+        'Are resources for change adequately planned?'
+      ],
+      commonNCRs: [
+        'Changes implemented without proper planning',
+        'Consequences of changes not evaluated',
+        'No process for controlling QMS changes',
+        'Resources for changes not adequately planned'
+      ]
+    },
+    {
+      number: '7.1.1',
+      title: 'General (Resources)',
+      description: 'The organization shall determine and provide the resources needed for the establishment, implementation, maintenance and continual improvement of the QMS.',
+      healthcareExample: 'Healthcare resources include qualified staff, medical equipment, facilities, technology systems, and financial resources.',
+      auditQuestions: [
+        'Are adequate resources provided for the QMS?',
+        'How are resource needs determined?',
+        'Are resources allocated based on priorities?',
+        'How is resource effectiveness evaluated?'
+      ],
+      commonNCRs: [
+        'Inadequate resources allocated to QMS',
+        'No systematic approach to resource planning',
+        'Resources not aligned with quality objectives',
+        'Staff resources insufficient for quality activities'
+      ]
+    },
+    {
+      number: '7.1.2',
+      title: 'People',
+      description: 'The organization shall determine and provide the persons necessary for the effective implementation of its QMS.',
+      healthcareExample: 'Ensuring adequate staffing levels, appropriate skill mix, and competent personnel for all healthcare services.',
+      auditQuestions: [
+        'Are staffing levels adequate for quality delivery?',
+        'How are personnel requirements determined?',
+        'Are backup arrangements in place?',
+        'How is staff workload managed?'
+      ],
+      commonNCRs: [
+        'Inadequate staffing for quality delivery',
+        'No systematic approach to staffing decisions',
+        'Excessive staff workload affecting quality',
+        'No backup arrangements for critical positions'
+      ]
+    },
+    {
+      number: '7.1.3',
+      title: 'Infrastructure',
+      description: 'The organization shall determine, provide and maintain the infrastructure necessary for the operation of its processes.',
+      healthcareExample: 'Healthcare infrastructure includes facilities, medical equipment, IT systems, utilities, and transportation.',
+      auditQuestions: [
+        'Is infrastructure adequate for service delivery?',
+        'How is infrastructure maintained?',
+        'Are backup systems available for critical infrastructure?',
+        'How is infrastructure performance monitored?'
+      ],
+      commonNCRs: [
+        'Infrastructure not adequate for service delivery',
+        'Poor maintenance of critical equipment',
+        'No backup systems for critical infrastructure',
+        'Infrastructure performance not monitored'
+      ]
+    },
+    {
+      number: '7.1.4',
+      title: 'Environment for the operation of processes',
+      description: 'The organization shall determine, provide and maintain the environment necessary for the operation of its processes.',
+      healthcareExample: 'Healthcare environments include sterile areas, patient care areas, proper lighting, temperature control, and noise management.',
+      auditQuestions: [
+        'Is the work environment suitable for healthcare delivery?',
+        'How are environmental conditions controlled?',
+        'Are infection control measures adequate?',
+        'How is environmental performance monitored?'
+      ],
+      commonNCRs: [
+        'Work environment not suitable for healthcare',
+        'Poor environmental controls (temperature, lighting)',
+        'Inadequate infection control measures',
+        'Environmental conditions not monitored'
       ]
     },
     {
       number: '7.1.5',
       title: 'Monitoring and measuring resources',
       description: 'The organization shall determine and provide the resources needed to ensure valid and reliable results.',
-      healthcareExample: 'Medical equipment calibration, laboratory instrument validation, patient monitoring systems maintenance.',
+      healthcareExample: 'Medical equipment calibration, laboratory instrument validation, patient monitoring systems maintenance, and measurement traceability.',
       auditQuestions: [
         'What monitoring and measuring equipment is used?',
         'How is equipment calibrated and maintained?',
-        'What happens when equipment is found out of calibration?'
+        'What happens when equipment is found out of calibration?',
+        'Is measurement traceability maintained?'
       ],
       commonNCRs: [
         'Equipment not properly calibrated',
         'No traceability to measurement standards',
-        'Inadequate records of calibration activities'
+        'Inadequate records of calibration activities',
+        'Out-of-calibration equipment not properly handled'
+      ]
+    },
+    {
+      number: '7.1.6',
+      title: 'Organizational knowledge',
+      description: 'The organization shall determine the knowledge necessary for the operation of its processes.',
+      healthcareExample: 'Clinical protocols, best practices, regulatory requirements, patient safety knowledge, and institutional experience.',
+      auditQuestions: [
+        'What knowledge is required for healthcare processes?',
+        'How is organizational knowledge maintained?',
+        'How is knowledge shared and transferred?',
+        'How is new knowledge acquired?'
+      ],
+      commonNCRs: [
+        'Required knowledge not identified or maintained',
+        'Poor knowledge sharing mechanisms',
+        'Loss of knowledge due to staff turnover',
+        'No process for acquiring new knowledge'
+      ]
+    },
+    {
+      number: '7.2',
+      title: 'Competence',
+      description: 'The organization shall determine the necessary competence of person(s) doing work that affects the performance and effectiveness of the QMS.',
+      healthcareExample: 'Clinical competencies, regulatory training, equipment operation, emergency procedures, and patient safety protocols.',
+      auditQuestions: [
+        'How are competence requirements determined?',
+        'How is staff competence evaluated?',
+        'What training is provided to ensure competence?',
+        'How is training effectiveness evaluated?'
+      ],
+      commonNCRs: [
+        'Staff competence not evaluated or documented',
+        'Training records incomplete or not maintained',
+        'No process for determining training effectiveness',
+        'Competence requirements not clearly defined'
+      ]
+    },
+    {
+      number: '7.3',
+      title: 'Awareness',
+      description: 'The organization shall ensure that persons doing work under the organization\'s control are aware of specific QMS elements.',
+      healthcareExample: 'Staff awareness of quality policy, patient safety goals, their role in quality, and improvement opportunities.',
+      auditQuestions: [
+        'Are staff aware of the quality policy?',
+        'Do staff understand their role in quality?',
+        'How is QMS awareness promoted?',
+        'Are staff aware of quality objectives?'
+      ],
+      commonNCRs: [
+        'Staff not aware of quality policy or objectives',
+        'Poor understanding of individual quality roles',
+        'No systematic approach to QMS awareness',
+        'Limited awareness of improvement opportunities'
+      ]
+    },
+    {
+      number: '7.4',
+      title: 'Communication',
+      description: 'The organization shall determine the internal and external communications relevant to the QMS.',
+      healthcareExample: 'Patient communication, staff communications, regulatory reporting, and external stakeholder communication.',
+      auditQuestions: [
+        'What communications are relevant to the QMS?',
+        'How is internal communication managed?',
+        'How is external communication controlled?',
+        'Are communication methods effective?'
+      ],
+      commonNCRs: [
+        'Poor internal QMS communication',
+        'External communication not controlled',
+        'Communication methods not effective',
+        'Important quality information not communicated'
+      ]
+    },
+    {
+      number: '7.5',
+      title: 'Documented information',
+      description: 'The QMS shall include documented information required by the standard and determined by the organization.',
+      healthcareExample: 'Clinical protocols, policies, procedures, patient records, training records, and regulatory documentation.',
+      auditQuestions: [
+        'Is required documented information available?',
+        'How is documented information controlled?',
+        'Are documents current and approved?',
+        'How is access to documents managed?'
+      ],
+      commonNCRs: [
+        'Documents not controlled or outdated versions in use',
+        'No approval process for document changes',
+        'External documents not identified or controlled',
+        'Poor document access control'
+      ]
+    },
+    {
+      number: '8.1',
+      title: 'Operational planning and control',
+      description: 'The organization shall plan, implement and control the processes needed to meet requirements.',
+      healthcareExample: 'Planning patient care processes, clinical protocols, resource allocation, and service delivery standards.',
+      auditQuestions: [
+        'How are operational processes planned?',
+        'What criteria are used to control processes?',
+        'How is outsourced work controlled?',
+        'Are process changes controlled?'
+      ],
+      commonNCRs: [
+        'Operational processes not properly planned',
+        'No criteria for process control',
+        'Outsourced processes not controlled',
+        'Process changes not properly managed'
       ]
     },
     {
       number: '8.2.1',
       title: 'Customer communication',
       description: 'Communication with customers shall include providing information relating to products and services.',
-      healthcareExample: 'Patient communication about treatment options, informed consent, discharge instructions, and complaint handling.',
+      healthcareExample: 'Patient communication about treatment options, informed consent, discharge instructions, complaint handling, and service information.',
       auditQuestions: [
         'How does the organization communicate with patients?',
         'What information is provided about services?',
-        'How are patient feedback and complaints handled?'
+        'How are patient feedback and complaints handled?',
+        'Are patients informed about their rights?'
       ],
       commonNCRs: [
         'Inadequate patient information provided',
         'No formal complaint handling process',
-        'Patient feedback not systematically collected'
+        'Patient feedback not systematically collected',
+        'Poor informed consent processes'
+      ]
+    },
+    {
+      number: '8.2.2',
+      title: 'Determining the requirements for products and services',
+      description: 'When determining the requirements for products and services, the organization shall ensure requirements are defined.',
+      healthcareExample: 'Understanding patient needs, regulatory requirements, clinical standards, and service specifications.',
+      auditQuestions: [
+        'How are patient requirements determined?',
+        'Are regulatory requirements identified?',
+        'How are clinical standards incorporated?',
+        'Are requirements documented and communicated?'
+      ],
+      commonNCRs: [
+        'Patient requirements not properly determined',
+        'Regulatory requirements not identified',
+        'Clinical standards not incorporated',
+        'Requirements not documented or communicated'
+      ]
+    },
+    {
+      number: '8.2.3',
+      title: 'Review of the requirements for products and services',
+      description: 'The organization shall ensure it has the ability to meet the requirements for products and services.',
+      healthcareExample: 'Reviewing ability to provide clinical services, ensuring adequate resources, and confirming regulatory compliance.',
+      auditQuestions: [
+        'How does the organization review its ability to meet requirements?',
+        'Are resource capabilities assessed?',
+        'How are changes in requirements handled?',
+        'Are reviews documented?'
+      ],
+      commonNCRs: [
+        'No review of ability to meet service requirements',
+        'Resource capabilities not assessed',
+        'Changes in requirements not properly reviewed',
+        'Reviews not documented'
+      ]
+    },
+    {
+      number: '8.2.4',
+      title: 'Changes to requirements for products and services',
+      description: 'The organization shall ensure that relevant documented information is amended when requirements change.',
+      healthcareExample: 'Managing changes to clinical protocols, regulatory updates, patient needs changes, and service modifications.',
+      auditQuestions: [
+        'How are changes to requirements controlled?',
+        'Is relevant documentation updated?',
+        'Are staff informed of changes?',
+        'How is change implementation verified?'
+      ],
+      commonNCRs: [
+        'Changes to requirements not controlled',
+        'Documentation not updated for changes',
+        'Staff not informed of requirement changes',
+        'Change implementation not verified'
+      ]
+    },
+    {
+      number: '8.3',
+      title: 'Design and development of products and services',
+      description: 'The organization shall establish, implement and maintain a design and development process.',
+      healthcareExample: 'Developing new clinical services, care pathways, treatment protocols, and service delivery models.',
+      auditQuestions: [
+        'How are new services designed and developed?',
+        'Are design inputs and outputs defined?',
+        'How is design verification performed?',
+        'Are design changes controlled?'
+      ],
+      commonNCRs: [
+        'No formal design and development process',
+        'Design inputs and outputs not defined',
+        'Design verification not performed',
+        'Design changes not controlled'
+      ]
+    },
+    {
+      number: '8.4',
+      title: 'Control of externally provided processes, products and services',
+      description: 'The organization shall ensure that externally provided processes, products and services conform to requirements.',
+      healthcareExample: 'Managing suppliers, contractors, laboratory services, medical devices, pharmaceuticals, and outsourced services.',
+      auditQuestions: [
+        'How are external providers selected and evaluated?',
+        'What controls are applied to external providers?',
+        'How is supplier performance monitored?',
+        'Are external provider requirements defined?'
+      ],
+      commonNCRs: [
+        'External providers not properly evaluated',
+        'No controls over external providers',
+        'Supplier performance not monitored',
+        'External provider requirements not defined'
+      ]
+    },
+    {
+      number: '8.5',
+      title: 'Production and service provision',
+      description: 'The organization shall implement production and service provision under controlled conditions.',
+      healthcareExample: 'Delivering clinical services, patient care processes, diagnostic services, and therapeutic interventions under controlled conditions.',
+      auditQuestions: [
+        'Are services delivered under controlled conditions?',
+        'Is documented information available for service delivery?',
+        'How is service delivery monitored?',
+        'Are validation and verification performed?'
+      ],
+      commonNCRs: [
+        'Services not delivered under controlled conditions',
+        'Documented information not available during service delivery',
+        'Service delivery not monitored',
+        'No validation of critical processes'
+      ]
+    },
+    {
+      number: '8.6',
+      title: 'Release of products and services',
+      description: 'The organization shall implement planned arrangements to verify that requirements have been met.',
+      healthcareExample: 'Patient discharge processes, service completion verification, treatment outcome assessment, and care transition protocols.',
+      auditQuestions: [
+        'How is service completion verified?',
+        'Are patient outcomes assessed before discharge?',
+        'Who authorizes service release?',
+        'Are release criteria defined?'
+      ],
+      commonNCRs: [
+        'Service completion not verified',
+        'Patient outcomes not assessed',
+        'No clear authorization for service release',
+        'Release criteria not defined'
+      ]
+    },
+    {
+      number: '8.7',
+      title: 'Control of nonconforming outputs',
+      description: 'The organization shall ensure that outputs that do not conform to requirements are identified and controlled.',
+      healthcareExample: 'Managing adverse events, medication errors, equipment failures, service deviations, and patient safety incidents.',
+      auditQuestions: [
+        'How are nonconforming services identified?',
+        'What actions are taken for nonconformances?',
+        'How are corrections and corrective actions managed?',
+        'Are nonconformances reported appropriately?'
+      ],
+      commonNCRs: [
+        'Nonconforming services not identified',
+        'No systematic approach to nonconformance control',
+        'Corrections and corrective actions not managed',
+        'Nonconformances not reported to authorities'
+      ]
+    },
+    {
+      number: '9.1',
+      title: 'Monitoring, measurement, analysis and evaluation',
+      description: 'The organization shall determine what needs to be monitored and measured, and the methods for monitoring.',
+      healthcareExample: 'Patient satisfaction monitoring, clinical indicators, safety metrics, regulatory compliance, and quality performance measures.',
+      auditQuestions: [
+        'What is monitored and measured?',
+        'Are monitoring methods appropriate?',
+        'How are results analyzed and evaluated?',
+        'Are monitoring results used for improvement?'
+      ],
+      commonNCRs: [
+        'Inadequate monitoring of key processes',
+        'Monitoring methods not appropriate',
+        'Results not analyzed or evaluated',
+        'Monitoring results not used for improvement'
+      ]
+    },
+    {
+      number: '9.1.2',
+      title: 'Customer satisfaction',
+      description: 'The organization shall monitor information relating to customer perception.',
+      healthcareExample: 'Patient satisfaction surveys, complaint analysis, feedback mechanisms, and patient experience metrics.',
+      auditQuestions: [
+        'How is patient satisfaction monitored?',
+        'What methods are used to obtain patient feedback?',
+        'How is feedback analyzed and used?',
+        'Are satisfaction trends monitored?'
+      ],
+      commonNCRs: [
+        'Patient satisfaction not systematically monitored',
+        'Limited methods for obtaining patient feedback',
+        'Feedback not analyzed or used for improvement',
+        'No trending of satisfaction data'
+      ]
+    },
+    {
+      number: '9.1.3',
+      title: 'Analysis and evaluation',
+      description: 'The organization shall analyze and evaluate appropriate data and information arising from monitoring and measurement.',
+      healthcareExample: 'Analysis of clinical outcomes, quality indicators, safety data, compliance metrics, and performance trends.',
+      auditQuestions: [
+        'How is quality data analyzed?',
+        'What evaluation methods are used?',
+        'Are trends and patterns identified?',
+        'How are analysis results used?'
+      ],
+      commonNCRs: [
+        'Quality data not properly analyzed',
+        'No systematic evaluation of QMS performance',
+        'Trends and patterns not identified',
+        'Analysis results not used for decision making'
+      ]
+    },
+    {
+      number: '9.2',
+      title: 'Internal audit',
+      description: 'The organization shall conduct internal audits at planned intervals to provide information on the QMS.',
+      healthcareExample: 'Systematic audits of clinical departments, support services, quality processes, and regulatory compliance.',
+      auditQuestions: [
+        'Are internal audits conducted at planned intervals?',
+        'Do audits cover all QMS processes?',
+        'Are auditors independent and competent?',
+        'How are audit results used?'
+      ],
+      commonNCRs: [
+        'Audit program not covering all QMS processes',
+        'Auditor independence not maintained',
+        'Audit findings not properly addressed',
+        'No follow-up on corrective actions'
+      ]
+    },
+    {
+      number: '9.3',
+      title: 'Management review',
+      description: 'Top management shall review the organization\'s QMS at planned intervals.',
+      healthcareExample: 'Regular executive reviews of quality performance, patient safety, regulatory compliance, and improvement initiatives.',
+      auditQuestions: [
+        'Are management reviews conducted at planned intervals?',
+        'Do reviews cover all required inputs?',
+        'Are review outputs documented?',
+        'Are review decisions implemented?'
+      ],
+      commonNCRs: [
+        'Management reviews not conducted regularly',
+        'Review inputs incomplete',
+        'Review outputs not documented',
+        'Review decisions not implemented'
+      ]
+    },
+    {
+      number: '10.1',
+      title: 'General (Improvement)',
+      description: 'The organization shall determine and select opportunities for improvement and implement any necessary actions.',
+      healthcareExample: 'Continuous improvement of patient care, safety initiatives, efficiency improvements, and innovation in healthcare delivery.',
+      auditQuestions: [
+        'How are improvement opportunities identified?',
+        'What improvement actions are implemented?',
+        'How is improvement effectiveness measured?',
+        'Are improvement activities planned and systematic?'
+      ],
+      commonNCRs: [
+        'Improvement opportunities not systematically identified',
+        'No planned approach to improvement',
+        'Improvement effectiveness not measured',
+        'Limited evidence of continual improvement'
+      ]
+    },
+    {
+      number: '10.2',
+      title: 'Nonconformity and corrective action',
+      description: 'When a nonconformity occurs, the organization shall react to the nonconformity and take action to control and correct it.',
+      healthcareExample: 'Managing patient safety events, regulatory violations, equipment failures, and process deviations with systematic corrective action.',
+      auditQuestions: [
+        'How are nonconformities identified and documented?',
+        'Are root causes determined?',
+        'Are corrective actions effective?',
+        'How is recurrence prevented?'
+      ],
+      commonNCRs: [
+        'Nonconformities not properly documented',
+        'Root cause analysis not performed',
+        'Corrective actions not effective',
+        'No verification of corrective action effectiveness'
+      ]
+    },
+    {
+      number: '10.3',
+      title: 'Continual improvement',
+      description: 'The organization shall continually improve the suitability, adequacy and effectiveness of the QMS.',
+      healthcareExample: 'Ongoing enhancement of clinical outcomes, patient experience, operational efficiency, and regulatory performance.',
+      auditQuestions: [
+        'How does the organization demonstrate continual improvement?',
+        'Are improvement results measured?',
+        'How is the QMS enhanced over time?',
+        'Are improvement opportunities prioritized?'
+      ],
+      commonNCRs: [
+        'No evidence of continual improvement',
+        'Improvement results not measured',
+        'QMS not enhanced over time',
+        'Improvement opportunities not prioritized'
       ]
     }
   ];
 
+  // Comprehensive Common NCRs by Category
   const commonNCRs = [
     {
       category: 'Document Control',
       ncrs: [
         'Documents not controlled or outdated versions in use',
         'No approval process for document changes',
-        'External documents not identified or controlled'
+        'External documents not identified or controlled',
+        'Document distribution not controlled',
+        'Obsolete documents not removed from use',
+        'Master list of documents not maintained',
+        'Document review schedule not followed',
+        'Electronic document controls inadequate'
       ]
     },
     {
-      category: 'Competence',
+      category: 'Competence and Training',
       ncrs: [
         'Staff competence not evaluated or documented',
         'Training records incomplete or not maintained',
-        'No process for determining training effectiveness'
+        'No process for determining training effectiveness',
+        'Competence requirements not defined for roles',
+        'On-the-job training not documented',
+        'Continuing education requirements not met',
+        'Training needs assessment not performed',
+        'No verification of training completion'
       ]
     },
     {
@@ -4860,7 +5479,12 @@ const ISO9001ReferenceGuide = () => {
       ncrs: [
         'Risk assessment not comprehensive or current',
         'Risk controls not effectively implemented',
-        'No monitoring of risk control effectiveness'
+        'No monitoring of risk control effectiveness',
+        'Risk register not maintained or updated',
+        'Clinical risks not adequately assessed',
+        'Patient safety risks not prioritized',
+        'Risk treatment plans not developed',
+        'Residual risks not evaluated'
       ]
     },
     {
@@ -4868,40 +5492,311 @@ const ISO9001ReferenceGuide = () => {
       ncrs: [
         'Audit program not covering all QMS processes',
         'Auditor independence not maintained',
-        'Audit findings not properly addressed'
+        'Audit findings not properly addressed',
+        'Audit criteria not clearly defined',
+        'No follow-up on corrective actions',
+        'Audit schedule not followed',
+        'Auditor competence not demonstrated',
+        'Audit evidence not sufficient'
+      ]
+    },
+    {
+      category: 'Patient Safety',
+      ncrs: [
+        'Patient safety incidents not properly reported',
+        'Root cause analysis not performed for serious events',
+        'Safety culture assessment not conducted',
+        'Patient safety goals not established',
+        'High-risk processes not identified',
+        'Safety training inadequate',
+        'Incident trends not analyzed',
+        'Safety performance not monitored'
+      ]
+    },
+    {
+      category: 'Equipment Management',
+      ncrs: [
+        'Medical equipment not properly maintained',
+        'Calibration schedule not followed',
+        'Equipment validation not performed',
+        'Preventive maintenance inadequate',
+        'Equipment records not maintained',
+        'User training on equipment not documented',
+        'Equipment performance not monitored',
+        'Backup equipment not available'
+      ]
+    },
+    {
+      category: 'Regulatory Compliance',
+      ncrs: [
+        'Regulatory requirements not identified',
+        'Compliance monitoring inadequate',
+        'Regulatory changes not tracked',
+        'License and certification status not monitored',
+        'Regulatory reporting not timely',
+        'Compliance training not provided',
+        'Regulatory audits not scheduled',
+        'Non-compliance issues not addressed'
+      ]
+    },
+    {
+      category: 'Customer Satisfaction',
+      ncrs: [
+        'Patient satisfaction not systematically measured',
+        'Complaint handling process inadequate',
+        'Patient feedback not analyzed',
+        'Satisfaction trends not monitored',
+        'Patient rights not communicated',
+        'Service standards not defined',
+        'Patient experience not improved',
+        'Satisfaction targets not met'
+      ]
+    },
+    {
+      category: 'Management Review',
+      ncrs: [
+        'Management reviews not conducted regularly',
+        'Review agenda not comprehensive',
+        'Action items from reviews not tracked',
+        'Review outputs not documented',
+        'Management decisions not implemented',
+        'QMS performance not reviewed',
+        'Review participants not appropriate',
+        'Review frequency not adequate'
+      ]
+    },
+    {
+      category: 'Corrective and Preventive Action',
+      ncrs: [
+        'CAPA process not systematic',
+        'Root cause analysis not thorough',
+        'Corrective actions not effective',
+        'Preventive actions not implemented',
+        'CAPA tracking inadequate',
+        'Effectiveness verification not performed',
+        'CAPA closure not appropriate',
+        'Trending of CAPAs not conducted'
       ]
     }
   ];
 
+  // Comprehensive Audit Checklists
   const auditChecklists = [
     {
+      id: 1,
       title: 'Patient Care Process Audit',
+      category: 'Clinical',
+      description: 'Comprehensive audit of patient care processes and quality indicators',
       items: [
-        'Are patient care protocols current and accessible?',
-        'Is staff training on protocols documented and current?',
-        'Are patient outcomes monitored and reviewed?',
-        'Is there evidence of continual improvement in care processes?'
+        { id: 1, question: 'Are patient care protocols current and evidence-based?', clause: '8.5', critical: true },
+        { id: 2, question: 'Is staff training on protocols documented and current?', clause: '7.2', critical: true },
+        { id: 3, question: 'Are patient outcomes monitored and reviewed?', clause: '9.1', critical: false },
+        { id: 4, question: 'Is there evidence of continual improvement in care processes?', clause: '10.3', critical: false },
+        { id: 5, question: 'Are patient safety goals established and monitored?', clause: '6.2', critical: true },
+        { id: 6, question: 'Is informed consent properly obtained and documented?', clause: '8.2.1', critical: true },
+        { id: 7, question: 'Are care plans individualized and regularly updated?', clause: '8.5', critical: false },
+        { id: 8, question: 'Is handoff communication standardized and effective?', clause: '7.4', critical: true },
+        { id: 9, question: 'Are clinical pathways followed and documented?', clause: '8.1', critical: false },
+        { id: 10, question: 'Is patient education provided and documented?', clause: '8.2.1', critical: false }
       ]
     },
     {
+      id: 2,
       title: 'Equipment Management Audit',
+      category: 'Technical',
+      description: 'Audit of medical equipment management and maintenance processes',
       items: [
-        'Is all medical equipment properly identified and tracked?',
-        'Are calibration and maintenance schedules followed?',
-        'Are equipment failures properly investigated?',
-        'Is there a preventive maintenance program in place?'
+        { id: 1, question: 'Is all medical equipment properly identified and tracked?', clause: '7.1.5', critical: true },
+        { id: 2, question: 'Are calibration and maintenance schedules followed?', clause: '7.1.5', critical: true },
+        { id: 3, question: 'Are equipment failures properly investigated?', clause: '8.7', critical: true },
+        { id: 4, question: 'Is there a preventive maintenance program in place?', clause: '7.1.3', critical: false },
+        { id: 5, question: 'Are equipment users properly trained?', clause: '7.2', critical: true },
+        { id: 6, question: 'Is equipment validation performed for critical devices?', clause: '7.1.5', critical: true },
+        { id: 7, question: 'Are backup systems available for critical equipment?', clause: '7.1.3', critical: false },
+        { id: 8, question: 'Is equipment performance monitored?', clause: '9.1', critical: false },
+        { id: 9, question: 'Are supplier qualifications verified for equipment?', clause: '8.4', critical: false },
+        { id: 10, question: 'Is equipment decommissioning properly controlled?', clause: '8.1', critical: false }
       ]
     },
     {
+      id: 3,
       title: 'Document and Record Control Audit',
+      category: 'Quality System',
+      description: 'Audit of document control and record management processes',
       items: [
-        'Are all documents current and approved versions?',
-        'Is there a document control procedure in place?',
-        'Are records legible, identifiable, and retained per schedule?',
-        'Is access to documents controlled appropriately?'
+        { id: 1, question: 'Are all documents current and approved versions?', clause: '7.5', critical: true },
+        { id: 2, question: 'Is there a document control procedure in place?', clause: '7.5', critical: true },
+        { id: 3, question: 'Are records legible, identifiable, and retained per schedule?', clause: '7.5', critical: true },
+        { id: 4, question: 'Is access to documents controlled appropriately?', clause: '7.5', critical: false },
+        { id: 5, question: 'Are external documents identified and controlled?', clause: '7.5', critical: false },
+        { id: 6, question: 'Is document distribution controlled?', clause: '7.5', critical: false },
+        { id: 7, question: 'Are obsolete documents removed from use?', clause: '7.5', critical: true },
+        { id: 8, question: 'Is there a master list of controlled documents?', clause: '7.5', critical: false },
+        { id: 9, question: 'Are electronic documents properly controlled?', clause: '7.5', critical: false },
+        { id: 10, question: 'Is document review schedule followed?', clause: '7.5', critical: false }
+      ]
+    },
+    {
+      id: 4,
+      title: 'Management System Audit',
+      category: 'Quality System',
+      description: 'Audit of quality management system requirements and leadership commitment',
+      items: [
+        { id: 1, question: 'Is the quality policy appropriate and communicated?', clause: '5.2', critical: true },
+        { id: 2, question: 'Are quality objectives established and monitored?', clause: '6.2', critical: true },
+        { id: 3, question: 'Does top management demonstrate QMS commitment?', clause: '5.1', critical: true },
+        { id: 4, question: 'Are roles and responsibilities clearly defined?', clause: '5.3', critical: true },
+        { id: 5, question: 'Is the QMS scope appropriate and documented?', clause: '4.3', critical: true },
+        { id: 6, question: 'Are processes and their interactions defined?', clause: '4.4', critical: false },
+        { id: 7, question: 'Is organizational context considered in QMS planning?', clause: '4.1', critical: false },
+        { id: 8, question: 'Are interested parties identified and their needs considered?', clause: '4.2', critical: false },
+        { id: 9, question: 'Are risks and opportunities addressed?', clause: '6.1', critical: true },
+        { id: 10, question: 'Is there evidence of continual improvement?', clause: '10.3', critical: false }
+      ]
+    },
+    {
+      id: 5,
+      title: 'Patient Safety Audit',
+      category: 'Clinical',
+      description: 'Comprehensive audit of patient safety systems and incident management',
+      items: [
+        { id: 1, question: 'Are patient safety goals established and monitored?', clause: '6.2', critical: true },
+        { id: 2, question: 'Is there a patient safety incident reporting system?', clause: '8.7', critical: true },
+        { id: 3, question: 'Are high-risk processes identified and controlled?', clause: '6.1', critical: true },
+        { id: 4, question: 'Is root cause analysis performed for serious events?', clause: '10.2', critical: true },
+        { id: 5, question: 'Are safety culture assessments conducted?', clause: '9.1', critical: false },
+        { id: 6, question: 'Is patient safety training provided to all staff?', clause: '7.2', critical: true },
+        { id: 7, question: 'Are near misses reported and analyzed?', clause: '8.7', critical: false },
+        { id: 8, question: 'Is there proactive risk assessment for new processes?', clause: '6.1', critical: false },
+        { id: 9, question: 'Are safety performance indicators monitored?', clause: '9.1', critical: false },
+        { id: 10, question: 'Is there evidence of safety improvement initiatives?', clause: '10.3', critical: false }
+      ]
+    },
+    {
+      id: 6,
+      title: 'Human Resources Audit',
+      category: 'Support Process',
+      description: 'Audit of human resource management and competency systems',
+      items: [
+        { id: 1, question: 'Are competence requirements defined for all roles?', clause: '7.2', critical: true },
+        { id: 2, question: 'Is staff competence evaluated and documented?', clause: '7.2', critical: true },
+        { id: 3, question: 'Are training records maintained and current?', clause: '7.2', critical: true },
+        { id: 4, question: 'Is training effectiveness evaluated?', clause: '7.2', critical: false },
+        { id: 5, question: 'Are staffing levels adequate for quality delivery?', clause: '7.1.2', critical: true },
+        { id: 6, question: 'Is there a systematic approach to training needs?', clause: '7.2', critical: false },
+        { id: 7, question: 'Are performance evaluations conducted regularly?', clause: '7.2', critical: false },
+        { id: 8, question: 'Is continuing education provided and tracked?', clause: '7.2', critical: false },
+        { id: 9, question: 'Are backup arrangements in place for key roles?', clause: '7.1.2', critical: false },
+        { id: 10, question: 'Is staff awareness of QMS promoted?', clause: '7.3', critical: false }
       ]
     }
   ];
+
+  const handleCheckboxChange = (checklistId, itemId) => {
+    setCheckedItems(prev => ({
+      ...prev,
+      [`${checklistId}-${itemId}`]: !prev[`${checklistId}-${itemId}`]
+    }));
+  };
+
+  const downloadChecklistPDF = (checklist) => {
+    // Simulate PDF generation and download
+    setTimeout(() => {
+      alert(`PDF checklist "${checklist.title}" has been generated and downloaded successfully!`);
+    }, 1500);
+  };
+
+  const printChecklist = (checklist) => {
+    // Simulate printing functionality
+    const printWindow = window.open('', '_blank');
+    const checklistHTML = generateChecklistHTML(checklist);
+    printWindow.document.write(checklistHTML);
+    printWindow.document.close();
+    printWindow.print();
+  };
+
+  const downloadGuide = () => {
+    // Simulate complete guide download
+    setTimeout(() => {
+      alert('ISO 9001 Healthcare Reference Guide has been downloaded successfully as PDF!');
+    }, 2000);
+  };
+
+  const generateChecklistHTML = (checklist) => {
+    return `
+      <html>
+        <head>
+          <title>${checklist.title}</title>
+          <style>
+            body { font-family: Arial, sans-serif; margin: 20px; }
+            h1 { color: #1f2937; border-bottom: 2px solid #3b82f6; padding-bottom: 10px; }
+            h2 { color: #374151; margin-top: 30px; }
+            table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+            th, td { border: 1px solid #d1d5db; padding: 8px; text-align: left; }
+            th { background-color: #f3f4f6; font-weight: bold; }
+            .critical { background-color: #fef2f2; }
+            .checkbox { width: 20px; height: 20px; border: 2px solid #374151; }
+            .header { margin-bottom: 30px; }
+            .footer { margin-top: 30px; font-size: 12px; color: #6b7280; }
+          </style>
+        </head>
+        <body>
+          <div class="header">
+            <h1>${checklist.title}</h1>
+            <p><strong>Category:</strong> ${checklist.category}</p>
+            <p><strong>Description:</strong> ${checklist.description}</p>
+            <p><strong>Audit Date:</strong> _________________</p>
+            <p><strong>Auditor:</strong> _________________</p>
+          </div>
+          
+          <table>
+            <thead>
+              <tr>
+                <th style="width: 50px;">Check</th>
+                <th style="width: 80px;">ISO Clause</th>
+                <th>Audit Question</th>
+                <th style="width: 80px;">Critical</th>
+                <th style="width: 100px;">Result</th>
+                <th>Comments</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${checklist.items.map(item => `
+                <tr ${item.critical ? 'class="critical"' : ''}>
+                  <td><div class="checkbox"></div></td>
+                  <td>${item.clause}</td>
+                  <td>${item.question}</td>
+                  <td>${item.critical ? 'Yes' : 'No'}</td>
+                  <td>C / NC / NA</td>
+                  <td style="width: 200px;"></td>
+                </tr>
+              `).join('')}
+            </tbody>
+          </table>
+          
+          <div style="margin-top: 40px;">
+            <h2>Summary</h2>
+            <p><strong>Total Items:</strong> ${checklist.items.length}</p>
+            <p><strong>Critical Items:</strong> ${checklist.items.filter(item => item.critical).length}</p>
+            <p><strong>Conformances:</strong> _____</p>
+            <p><strong>Non-Conformances:</strong> _____</p>
+            <p><strong>Not Applicable:</strong> _____</p>
+          </div>
+          
+          <div style="margin-top: 40px;">
+            <h2>Audit Conclusion</h2>
+            <p>Overall Assessment: ________________</p>
+            <p>Key Findings: ________________</p>
+            <p>Recommendations: ________________</p>
+          </div>
+          
+          <div class="footer">
+            <p>Generated by ISO 9001 Healthcare QMS - ${new Date().toLocaleDateString()}</p>
+          </div>
+        </body>
+      </html>
+    `;
+  };
 
   const filteredClauses = iso9001Clauses.filter(clause =>
     clause.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
