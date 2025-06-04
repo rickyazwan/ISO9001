@@ -155,7 +155,7 @@ const ModalProvider = ({ children }) => {
       case 'reportIncident':
         return <ReportIncidentForm onClose={() => closeModal(id)} />;
       case 'safetyAdvancedFilter':
-        return <SafetyAdvancedFilter onApplyFilters={(filters) => console.log('Applied safety filters:', filters)} onClose={() => closeModal(id)} />;
+        return <div>Safety Advanced Filter has been removed</div>;
       default:
         return modalData.content;
     }
