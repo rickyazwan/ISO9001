@@ -2655,7 +2655,7 @@ const ReportsAnalytics = () => {
           <p className="text-gray-600">Generate comprehensive reports and analyze performance metrics</p>
         </div>
         <button 
-          onClick={() => openModal('generateReport', <div>Generate Custom Report Form</div>)}
+          onClick={() => openModal('generateReport')}
           className="bg-blue-600 text-white px-6 py-2 rounded-lg font-medium hover:bg-blue-700 transition-colors"
         >
           <Plus size={16} className="inline mr-2" />
