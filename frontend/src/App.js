@@ -3538,28 +3538,13 @@ const ReportsAnalytics = () => {
                 </div>
               </div>
 
-              {/* Report Templates */}
-              <div className="bg-gray-50 rounded-lg p-6">
-                <h3 className="text-lg font-semibold mb-4">Saved Report Templates</h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {[
-                    { name: 'Monthly Compliance Summary', type: 'Compliance', schedule: 'Monthly' },
-                    { name: 'Weekly Safety Report', type: 'Safety', schedule: 'Weekly' },
-                    { name: 'Quarterly Audit Overview', type: 'Audit', schedule: 'Quarterly' },
-                    { name: 'Executive Dashboard', type: 'Performance', schedule: 'Weekly' }
-                  ].map((template, index) => (
-                    <div key={index} className="bg-white rounded-lg p-4 border border-gray-200">
-                      <h4 className="font-medium text-gray-900 mb-2">{template.name}</h4>
-                      <p className="text-sm text-gray-600 mb-3">{template.type} • {template.schedule}</p>
-                      <div className="flex gap-2">
-                        <button className="text-blue-600 hover:text-blue-800 text-sm">Run</button>
-                        <button className="text-gray-600 hover:text-gray-800 text-sm">Edit</button>
-                        <button className="text-red-600 hover:text-red-800 text-sm">Delete</button>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
+              {/* Enhanced Report Templates with Role-Based Actions */}
+              <TemplateManagement 
+                templates={sampleData.reportTemplates}
+                onRun={(template) => console.log('Running template:', template)}
+                onEdit={(template) => console.log('Editing template:', template)}
+                onDelete={(template) => console.log('Deleting template:', template)}
+              />
             </div>
           )}
         </div>
