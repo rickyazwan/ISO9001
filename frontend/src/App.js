@@ -2471,64 +2471,14 @@ const CAPAManagement = () => {
                 </div>
               </div>
 
+              {/* Enhanced CAPA List with Role-Based Actions */}
               <div className="space-y-4">
-                {capas.map((capa) => (
-                  <div key={capa.id} className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
-                    <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
-                      <div className="flex-1">
-                        <div className="flex items-center gap-3 mb-2">
-                          <h4 className="font-medium text-gray-900">{capa.title}</h4>
-                          <span className={clsx(
-                            "px-2 py-1 rounded-full text-xs font-medium",
-                            capa.priority === 'Critical' ? 'bg-red-100 text-red-800' :
-                            capa.priority === 'High' ? 'bg-red-100 text-red-800' :
-                            capa.priority === 'Medium' ? 'bg-yellow-100 text-yellow-800' :
-                            'bg-green-100 text-green-800'
-                          )}>
-                            {capa.priority}
-                          </span>
-                          <span className={clsx(
-                            "px-2 py-1 rounded-full text-xs font-medium",
-                            capa.status === 'Open' ? 'bg-red-100 text-red-800' :
-                            capa.status === 'In Progress' ? 'bg-yellow-100 text-yellow-800' :
-                            'bg-green-100 text-green-800'
-                          )}>
-                            {capa.status}
-                          </span>
-                        </div>
-                        <div className="text-sm text-gray-500 space-y-1">
-                          <p>Category: {capa.category}</p>
-                          <p>Assignee: {capa.assignee}</p>
-                          <p>Due Date: {capa.dueDate}</p>
-                        </div>
-                        {capa.status === 'In Progress' && (
-                          <div className="mt-3">
-                            <div className="flex items-center justify-between text-sm text-gray-600 mb-1">
-                              <span>Progress</span>
-                              <span>{capa.progress}%</span>
-                            </div>
-                            <div className="w-full bg-gray-200 rounded-full h-2">
-                              <div
-                                className="bg-blue-600 h-2 rounded-full transition-all duration-300"
-                                style={{ width: `${capa.progress}%` }}
-                              ></div>
-                            </div>
-                          </div>
-                        )}
-                      </div>
-                      <div className="flex items-center space-x-2">
-                        <button className="text-blue-600 hover:text-blue-800">
-                          <Eye size={16} />
-                        </button>
-                        <button className="text-gray-600 hover:text-gray-800">
-                          <Edit size={16} />
-                        </button>
-                        <button className="text-red-600 hover:text-red-800">
-                          <Trash2 size={16} />
-                        </button>
-                      </div>
-                    </div>
-                  </div>
+                {capas.map((capa, index) => (
+                  <CAPAListItem 
+                    key={capa.id} 
+                    capa={capa} 
+                    isLast={index === capas.length - 1}
+                  />
                 ))}
               </div>
             </div>
