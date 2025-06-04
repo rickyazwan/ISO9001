@@ -171,6 +171,12 @@ const ModalProvider = ({ children }) => {
         return <ScheduleEventForm onClose={() => closeModal(id)} />;
       case 'exportCalendar':
         return <ExportCalendarForm onClose={() => closeModal(id)} />;
+      case 'uploadDocument':
+        return <UploadDocumentForm onClose={() => closeModal(id)} />;
+      case 'bulkExportDocuments':
+        return <BulkExportDocumentsForm onClose={() => closeModal(id)} />;
+      case 'viewDocument':
+        return <ViewDocumentModal document={modalData.document} onClose={() => closeModal(id)} />;
       default:
         return modalData.content;
     }
