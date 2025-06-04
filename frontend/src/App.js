@@ -1908,11 +1908,17 @@ const CAPAManagement = () => {
               <div className="flex justify-between items-center">
                 <h3 className="text-lg font-semibold">All CAPAs</h3>
                 <div className="flex gap-2">
-                  <button className="flex items-center px-3 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">
+                  <button 
+                    onClick={() => openModal('advancedFilter')}
+                    className="flex items-center px-3 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+                  >
                     <Filter size={16} className="mr-2" />
                     Filter
                   </button>
-                  <button className="flex items-center px-3 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">
+                  <button 
+                    onClick={() => exportData(capas, 'capa-report', 'excel')}
+                    className="flex items-center px-3 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+                  >
                     <Download size={16} className="mr-2" />
                     Export
                   </button>
