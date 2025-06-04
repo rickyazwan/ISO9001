@@ -1933,31 +1933,9 @@ function App() {
       case 'capa':
         return <CAPAManagement />;
       case 'reports':
-        return <PlaceholderComponent 
-          title="Reports & Analytics" 
-          description="Generate comprehensive reports and analytics"
-          features={[
-            'Compliance reports with date range filtering',
-            'Patient safety incident reports',
-            'Performance metrics and KPI dashboards',
-            'Custom report generation',
-            'Export functionality (PDF, Excel, CSV)',
-            'Automated report scheduling'
-          ]}
-        />;
+        return <ReportsAnalytics />;
       case 'safety':
-        return <PlaceholderComponent 
-          title="Patient Safety" 
-          description="Manage patient safety incidents and reporting"
-          features={[
-            'Incident reporting and tracking',
-            'Safety metrics and analytics',
-            'Root cause analysis tools',
-            'Incident categorization and severity levels',
-            'Investigation workflow management',
-            'Safety trend analysis and alerts'
-          ]}
-        />;
+        return <PatientSafety />;
       case 'calendar':
         return <PlaceholderComponent 
           title="Calendar & Scheduling" 
