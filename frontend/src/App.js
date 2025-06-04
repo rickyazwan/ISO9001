@@ -214,6 +214,12 @@ const ModalProvider = ({ children }) => {
         return 'Bulk Export Documents';
       case 'viewDocument':
         return 'View Document';
+      case 'addUser':
+        return 'Add New User';
+      case 'editUser':
+        return 'Edit User';
+      case 'changeFacilityName':
+        return 'Change Facility Name';
       default:
         return modalData.title;
     }
