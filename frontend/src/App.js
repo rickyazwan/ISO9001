@@ -152,6 +152,10 @@ const ModalProvider = ({ children }) => {
         return <GenerateReportForm onClose={() => closeModal(id)} />;
       case 'advancedFilter':
         return <AdvancedFilter onApplyFilters={(filters) => console.log('Applied filters:', filters)} onClose={() => closeModal(id)} />;
+      case 'reportIncident':
+        return <ReportIncidentForm onClose={() => closeModal(id)} />;
+      case 'safetyAdvancedFilter':
+        return <SafetyAdvancedFilter onApplyFilters={(filters) => console.log('Applied safety filters:', filters)} onClose={() => closeModal(id)} />;
       default:
         return modalData.content;
     }
@@ -169,6 +173,10 @@ const ModalProvider = ({ children }) => {
         return 'Generate Custom Report';
       case 'advancedFilter':
         return 'Advanced Filters';
+      case 'reportIncident':
+        return 'Report Patient Safety Incident';
+      case 'safetyAdvancedFilter':
+        return 'Advanced Safety Filters';
       default:
         return modalData.title;
     }
