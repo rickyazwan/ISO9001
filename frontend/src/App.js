@@ -1804,7 +1804,7 @@ const CAPAManagement = () => {
           <p className="text-gray-600">Corrective & Preventive Actions tracking and management</p>
         </div>
         <button 
-          onClick={() => openModal('createCAPA', <div>Create New CAPA Form</div>)}
+          onClick={() => openModal('createCAPA')}
           className="bg-blue-600 text-white px-6 py-2 rounded-lg font-medium hover:bg-blue-700 transition-colors"
         >
           <Plus size={16} className="inline mr-2" />
