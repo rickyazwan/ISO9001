@@ -5,7 +5,7 @@ import time
 import sys
 
 # Backend URL from frontend/.env
-BACKEND_URL = "https://a95636cf-7d48-4a97-8f77-49a869ec2479.preview.emergentagent.com"
+BACKEND_URL = "https://41988484-4ad4-4056-89a7-5737d0b393b9.preview.emergentagent.com"
 API_BASE_URL = f"{BACKEND_URL}/api"
 
 def test_root_endpoint():
