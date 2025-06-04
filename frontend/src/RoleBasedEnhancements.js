@@ -245,25 +245,41 @@ export const RoleBasedActionButtons = ({
   );
 };
 
-// Enhanced Recent Reports Component with Download Functionality
-export const EnhancedRecentReports = ({ reports }) => {
-  const downloadReport = (report) => {
-    // Simulate download with different file types
-    const fileExtension = report.format.toLowerCase();
-    const fileName = `${report.name.replace(/\s+/g, '_')}.${fileExtension}`;
+// Enhanced Recent Reports Component with Functional Download
+export const EnhancedRecentReports = ({ reports, openModal }) => {
+  const [downloadingReport, setDownloadingReport] = useState(null);
+
+  const startDownload = async (report) => {
+    setDownloadingReport(report.id);
     
-    setTimeout(() => {
+    // Simulate download process
+    try {
+      await new Promise(resolve => setTimeout(resolve, 2000));
+      
+      // Create and trigger download
+      const fileName = `${report.name.replace(/\s+/g, '_')}_${new Date().toISOString().split('T')[0]}.${report.format.toLowerCase()}`;
+      
+      // Show success notification
       alert(`Report "${fileName}" has been downloaded successfully!`);
       
-      // Create a mock download experience
+      // Optional: Create actual download blob for demo
+      const content = `# ${report.name}\n\nGenerated: ${report.generated}\nType: ${report.type}\nFormat: ${report.format}\n\nThis is a sample report content for demonstration purposes.`;
+      const blob = new Blob([content], { type: 'text/plain' });
+      const url = window.URL.createObjectURL(blob);
       const link = document.createElement('a');
-      link.href = '#';
+      link.href = url;
       link.download = fileName;
       link.style.display = 'none';
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
-    }, 500);
+      window.URL.revokeObjectURL(url);
+      
+    } catch (error) {
+      alert('Download failed. Please try again.');
+    } finally {
+      setDownloadingReport(null);
+    }
   };
 
   return (
@@ -299,11 +315,20 @@ export const EnhancedRecentReports = ({ reports }) => {
               </span>
               {report.status === 'Ready' && (
                 <button 
-                  onClick={() => downloadReport(report)}
-                  className="text-blue-600 hover:text-blue-800 transition-colors"
+                  onClick={() => startDownload(report)}
+                  disabled={downloadingReport === report.id}
+                  className={`transition-colors ${
+                    downloadingReport === report.id 
+                      ? 'text-gray-400 cursor-not-allowed' 
+                      : 'text-blue-600 hover:text-blue-800'
+                  }`}
                   title="Download Report"
                 >
-                  <Download size={16} />
+                  {downloadingReport === report.id ? (
+                    <div className="animate-spin w-4 h-4 border-2 border-blue-600 border-t-transparent rounded-full"></div>
+                  ) : (
+                    <Download size={16} />
+                  )}
                 </button>
               )}
             </div>
