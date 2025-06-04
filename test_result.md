@@ -150,9 +150,11 @@
 
 ## test_plan:
   current_focus:
-    - "ISO 9001 Reference Guide enhancements completed"
-    - "Calendar & Scheduling enhancements completed"
-    - "Ready for user feedback and next enhancement priorities"
+    - "Quality Documents module enhancements completed"
+    - "Upload Document Form with file handling and approval workflow"
+    - "Bulk Export Documents with advanced options"
+    - "View Document Modal with preview and version history"
+    - "Ready for user testing and feedback"
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
