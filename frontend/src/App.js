@@ -160,7 +160,236 @@ const useModal = () => {
   return context;
 };
 
-// Enhanced Modal Components with Forms
+// Enhanced Modal Component
+const Modal = ({ id, children, onClose, title }) => {
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+      <div className="bg-white rounded-lg max-w-4xl w-full max-h-[95vh] overflow-hidden">
+        <div className="flex justify-between items-center p-6 border-b bg-gray-50">
+          <h2 className="text-xl font-semibold text-gray-900">{title}</h2>
+          <button
+            onClick={onClose}
+            className="text-gray-400 hover:text-gray-600 transition-colors p-1 rounded-full hover:bg-gray-200"
+          >
+            <X size={24} />
+          </button>
+        </div>
+        <div className="p-6 overflow-y-auto max-h-[calc(95vh-120px)]">
+          {children}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// Export Functions
+const exportData = (data, filename, format = 'csv') => {
+  if (format === 'csv') {
+    const csvContent = convertToCSV(data);
+    downloadFile(csvContent, `${filename}.csv`, 'text/csv');
+  } else if (format === 'excel') {
+    // Simulate Excel export
+    setTimeout(() => {
+      alert(`Excel file "${filename}.xlsx" has been downloaded successfully!`);
+    }, 1000);
+  } else if (format === 'pdf') {
+    // Simulate PDF export
+    setTimeout(() => {
+      alert(`PDF file "${filename}.pdf" has been downloaded successfully!`);
+    }, 1000);
+  }
+};
+
+const convertToCSV = (data) => {
+  if (!data || data.length === 0) return '';
+  
+  const headers = Object.keys(data[0]).join(',');
+  const rows = data.map(row => 
+    Object.values(row).map(value => 
+      typeof value === 'string' && value.includes(',') ? `"${value}"` : value
+    ).join(',')
+  );
+  
+  return [headers, ...rows].join('\n');
+};
+
+const downloadFile = (content, filename, type) => {
+  const blob = new Blob([content], { type });
+  const url = window.URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = filename;
+  link.click();
+  window.URL.revokeObjectURL(url);
+};
+
+// Enhanced Filter Component
+const AdvancedFilter = ({ onApplyFilters, onClose }) => {
+  const [filters, setFilters] = useState({
+    dateRange: 'all',
+    startDate: '',
+    endDate: '',
+    facility: 'all',
+    status: 'all',
+    priority: 'all',
+    category: 'all',
+    assignee: 'all'
+  });
+
+  const facilities = ['All Facilities', 'General Hospital', 'Emergency Center', 'Pediatric Ward', 'Outpatient Clinic'];
+  const statusOptions = ['All Status', 'Open', 'In Progress', 'Completed', 'Overdue', 'Cancelled'];
+  const priorityOptions = ['All Priority', 'Critical', 'High', 'Medium', 'Low'];
+  const categoryOptions = ['All Categories', 'Safety', 'Quality', 'Equipment', 'Process', 'Training', 'Documentation'];
+  const assigneeOptions = ['All Assignees', 'Quality Team', 'Safety Officer', 'IT Team', 'Maintenance', 'HR Department'];
+
+  const handleApply = () => {
+    onApplyFilters(filters);
+    onClose();
+  };
+
+  return (
+    <div className="space-y-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">Date Range</label>
+          <select
+            value={filters.dateRange}
+            onChange={(e) => setFilters(prev => ({ ...prev, dateRange: e.target.value }))}
+            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+          >
+            <option value="all">All Time</option>
+            <option value="today">Today</option>
+            <option value="week">This Week</option>
+            <option value="month">This Month</option>
+            <option value="quarter">This Quarter</option>
+            <option value="year">This Year</option>
+            <option value="custom">Custom Range</option>
+          </select>
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">Facility</label>
+          <select
+            value={filters.facility}
+            onChange={(e) => setFilters(prev => ({ ...prev, facility: e.target.value }))}
+            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+          >
+            {facilities.map(facility => (
+              <option key={facility} value={facility.toLowerCase()}>{facility}</option>
+            ))}
+          </select>
+        </div>
+      </div>
+
+      {filters.dateRange === 'custom' && (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Start Date</label>
+            <input
+              type="date"
+              value={filters.startDate}
+              onChange={(e) => setFilters(prev => ({ ...prev, startDate: e.target.value }))}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">End Date</label>
+            <input
+              type="date"
+              value={filters.endDate}
+              onChange={(e) => setFilters(prev => ({ ...prev, endDate: e.target.value }))}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            />
+          </div>
+        </div>
+      )}
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">Status</label>
+          <select
+            value={filters.status}
+            onChange={(e) => setFilters(prev => ({ ...prev, status: e.target.value }))}
+            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+          >
+            {statusOptions.map(status => (
+              <option key={status} value={status.toLowerCase()}>{status}</option>
+            ))}
+          </select>
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">Priority</label>
+          <select
+            value={filters.priority}
+            onChange={(e) => setFilters(prev => ({ ...prev, priority: e.target.value }))}
+            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+          >
+            {priorityOptions.map(priority => (
+              <option key={priority} value={priority.toLowerCase()}>{priority}</option>
+            ))}
+          </select>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">Category</label>
+          <select
+            value={filters.category}
+            onChange={(e) => setFilters(prev => ({ ...prev, category: e.target.value }))}
+            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+          >
+            {categoryOptions.map(category => (
+              <option key={category} value={category.toLowerCase()}>{category}</option>
+            ))}
+          </select>
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">Assigned To</label>
+          <select
+            value={filters.assignee}
+            onChange={(e) => setFilters(prev => ({ ...prev, assignee: e.target.value }))}
+            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+          >
+            {assigneeOptions.map(assignee => (
+              <option key={assignee} value={assignee.toLowerCase()}>{assignee}</option>
+            ))}
+          </select>
+        </div>
+      </div>
+
+      <div className="flex justify-end space-x-3 pt-6 border-t">
+        <button
+          type="button"
+          onClick={onClose}
+          className="px-4 py-2 text-gray-700 bg-gray-200 rounded-lg hover:bg-gray-300 transition-colors"
+        >
+          Cancel
+        </button>
+        <button
+          onClick={() => setFilters({
+            dateRange: 'all',
+            startDate: '',
+            endDate: '',
+            facility: 'all',
+            status: 'all',
+            priority: 'all',
+            category: 'all',
+            assignee: 'all'
+          })}
+          className="px-4 py-2 text-blue-600 bg-blue-50 rounded-lg hover:bg-blue-100 transition-colors"
+        >
+          Clear All
+        </button>
+        <button
+          onClick={handleApply}
+          className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+        >
+          Apply Filters
+        </button>
+      </div>
+    </div>
+  );
+};
 
 // Add Facility Form
 const AddFacilityForm = ({ onClose }) => {
