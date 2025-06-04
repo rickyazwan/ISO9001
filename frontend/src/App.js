@@ -5250,7 +5250,7 @@ const CAPAManagement = () => {
 // Settings Component
 const SystemSettings = () => {
   const { language, setLanguage, t } = useLanguage();
-  const [districtName, setDistrictName] = useState('Metro Health District');
+  const [facilityName, setFacilityName] = useState('Metro Health District');
   const [users, setUsers] = useState([
     { id: 1, name: 'Dr. Sarah Johnson', email: 'sarah.johnson@health.gov', role: 'Administrator', status: 'Active' },
     { id: 2, name: 'Mike Chen', email: 'mike.chen@health.gov', role: 'Auditor', status: 'Active' },
@@ -5259,6 +5259,21 @@ const SystemSettings = () => {
 
   const { openModal } = useModal();
 
+  const handleFacilityNameChange = () => {
+    openModal('changeFacilityName');
+  };
+
+  const handleEditUser = (user) => {
+    openModal('editUser', null, 'Edit User', { user });
+  };
+
+  const handleDeleteUser = (user) => {
+    if (window.confirm(`Are you sure you want to delete user "${user.name}"?`)) {
+      setUsers(prev => prev.filter(u => u.id !== user.id));
+      alert(`User "${user.name}" has been deleted successfully!`);
+    }
+  };
+
   return (
     <div className="space-y-6">
       <div>
@@ -5266,21 +5281,34 @@ const SystemSettings = () => {
         <p className="text-gray-600">Configure system settings and manage users</p>
       </div>
 
-      {/* General Settings */}
+      {/* Facility Settings */}
       <div className="bg-white rounded-lg shadow-md p-6">
-        <h3 className="text-lg font-semibold mb-4">General Settings</h3>
+        <h3 className="text-lg font-semibold mb-4">Facility Settings</h3>
         <div className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">District Name</label>
-            <input
-              type="text"
-              value={districtName}
-              onChange={(e) => setDistrictName(e.target.value)}
-              className="w-full max-w-md px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            />
+            <label className="block text-sm font-medium text-gray-700 mb-2">Facility Name</label>
+            <div className="flex items-center space-x-3">
+              <input
+                type="text"
+                value={facilityName}
+                disabled
+                className="flex-1 max-w-md px-3 py-2 border border-gray-300 rounded-lg bg-gray-100 text-gray-500"
+              />
+              <button
+                onClick={handleFacilityNameChange}
+                className="bg-blue-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-blue-700 transition-colors"
+              >
+                <Edit size={16} className="inline mr-2" />
+                Change
+              </button>
+            </div>
+            <p className="text-sm text-gray-500 mt-1">
+              Changing the facility name will reset all data to start fresh with the new facility context.
+            </p>
           </div>
+          
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Language</label>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Language / Bahasa</label>
             <select
               value={language}
               onChange={(e) => setLanguage(e.target.value)}
@@ -5293,12 +5321,55 @@ const SystemSettings = () => {
         </div>
       </div>
 
+      {/* System Information */}
+      <div className="bg-white rounded-lg shadow-md p-6">
+        <h3 className="text-lg font-semibold mb-4">System Information</h3>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="bg-blue-50 p-4 rounded-lg">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-blue-600">Total Users</p>
+                <p className="text-2xl font-bold text-blue-900">{users.length}</p>
+              </div>
+              <User size={24} className="text-blue-600" />
+            </div>
+          </div>
+          <div className="bg-green-50 p-4 rounded-lg">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-green-600">Active Users</p>
+                <p className="text-2xl font-bold text-green-900">{users.filter(u => u.status === 'Active').length}</p>
+              </div>
+              <CheckCircle size={24} className="text-green-600" />
+            </div>
+          </div>
+          <div className="bg-yellow-50 p-4 rounded-lg">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-yellow-600">Current Language</p>
+                <p className="text-lg font-bold text-yellow-900">{language === 'en' ? 'English' : 'Bahasa Malaysia'}</p>
+              </div>
+              <Globe size={24} className="text-yellow-600" />
+            </div>
+          </div>
+          <div className="bg-purple-50 p-4 rounded-lg">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-purple-600">System Status</p>
+                <p className="text-lg font-bold text-purple-900">Online</p>
+              </div>
+              <Activity size={24} className="text-purple-600" />
+            </div>
+          </div>
+        </div>
+      </div>
+
       {/* User Management */}
       <div className="bg-white rounded-lg shadow-md p-6">
         <div className="flex justify-between items-center mb-4">
           <h3 className="text-lg font-semibold">User Management</h3>
           <button 
-            onClick={() => openModal('addUser', <div>Add User Form</div>)}
+            onClick={() => openModal('addUser')}
             className="bg-blue-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-blue-700 transition-colors"
           >
             <Plus size={16} className="inline mr-2" />
@@ -5337,10 +5408,18 @@ const SystemSettings = () => {
                   </td>
                   <td className="px-6 py-4">
                     <div className="flex items-center space-x-2">
-                      <button className="text-blue-600 hover:text-blue-800">
+                      <button 
+                        onClick={() => handleEditUser(user)}
+                        className="text-blue-600 hover:text-blue-800"
+                        title="Edit User"
+                      >
                         <Edit size={16} />
                       </button>
-                      <button className="text-red-600 hover:text-red-800">
+                      <button 
+                        onClick={() => handleDeleteUser(user)}
+                        className="text-red-600 hover:text-red-800"
+                        title="Delete User"
+                      >
                         <Trash2 size={16} />
                       </button>
                     </div>
@@ -5374,6 +5453,29 @@ const SystemSettings = () => {
               </label>
             </div>
           ))}
+        </div>
+      </div>
+
+      {/* Backup and Security */}
+      <div className="bg-white rounded-lg shadow-md p-6">
+        <h3 className="text-lg font-semibold mb-4">Backup & Security</h3>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div>
+            <h4 className="font-medium text-gray-900 mb-2">Data Backup</h4>
+            <p className="text-sm text-gray-600 mb-3">Last backup: {new Date().toLocaleDateString()}</p>
+            <button className="bg-green-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-green-700 transition-colors">
+              <Download size={16} className="inline mr-2" />
+              Create Backup
+            </button>
+          </div>
+          <div>
+            <h4 className="font-medium text-gray-900 mb-2">Session Security</h4>
+            <p className="text-sm text-gray-600 mb-3">Auto-logout after 30 minutes of inactivity</p>
+            <button className="bg-gray-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-gray-700 transition-colors">
+              <Shield size={16} className="inline mr-2" />
+              Security Settings
+            </button>
+          </div>
         </div>
       </div>
     </div>
