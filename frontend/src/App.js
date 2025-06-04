@@ -7504,16 +7504,44 @@ const QualityDocuments = () => {
                   </td>
                   <td className="px-6 py-4">
                     <div className="flex items-center space-x-2">
-                      <button className="text-blue-600 hover:text-blue-800" title="View">
+                      <button 
+                        onClick={() => openModal('viewDocument', null, 'View Document', { document: doc })}
+                        className="text-blue-600 hover:text-blue-800" 
+                        title="View"
+                      >
                         <Eye size={16} />
                       </button>
-                      <button className="text-green-600 hover:text-green-800" title="Download">
+                      <button 
+                        onClick={() => {
+                          // Simulate download
+                          setTimeout(() => {
+                            const blob = new Blob(['Sample document content'], { type: 'application/pdf' });
+                            const url = URL.createObjectURL(blob);
+                            const link = document.createElement('a');
+                            link.href = url;
+                            link.download = `${doc.name}.${doc.type.toLowerCase()}`;
+                            link.click();
+                            URL.revokeObjectURL(url);
+                            alert(`Document "${doc.name}" has been downloaded successfully!`);
+                          }, 500);
+                        }}
+                        className="text-green-600 hover:text-green-800" 
+                        title="Download"
+                      >
                         <Download size={16} />
                       </button>
                       <button className="text-gray-600 hover:text-gray-800" title="Edit">
                         <Edit size={16} />
                       </button>
-                      <button className="text-red-600 hover:text-red-800" title="Delete">
+                      <button 
+                        onClick={() => {
+                          if (window.confirm(`Are you sure you want to delete "${doc.name}"?`)) {
+                            alert(`Document "${doc.name}" has been deleted successfully!`);
+                          }
+                        }}
+                        className="text-red-600 hover:text-red-800" 
+                        title="Delete"
+                      >
                         <Trash2 size={16} />
                       </button>
                     </div>
