@@ -167,6 +167,10 @@ const ModalProvider = ({ children }) => {
         return <ReportIncidentForm onClose={() => closeModal(id)} />;
       case 'safetyAdvancedFilter':
         return <div>Safety Advanced Filter has been removed</div>;
+      case 'scheduleEvent':
+        return <ScheduleEventForm onClose={() => closeModal(id)} />;
+      case 'exportCalendar':
+        return <ExportCalendarForm onClose={() => closeModal(id)} />;
       default:
         return modalData.content;
     }
