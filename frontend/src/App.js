@@ -128,8 +128,8 @@ const ModalContext = createContext();
 const ModalProvider = ({ children }) => {
   const [modals, setModals] = useState({});
 
-  const openModal = (id, content) => {
-    setModals(prev => ({ ...prev, [id]: content }));
+  const openModal = (id, content, title = 'Modal') => {
+    setModals(prev => ({ ...prev, [id]: { content, title } }));
   };
 
   const closeModal = (id) => {
@@ -140,12 +140,51 @@ const ModalProvider = ({ children }) => {
     });
   };
 
+  const getModalContent = (id, modalData) => {
+    switch (id) {
+      case 'addFacility':
+        return <AddFacilityForm onClose={() => closeModal(id)} />;
+      case 'scheduleAudit':
+        return <ScheduleAuditForm onClose={() => closeModal(id)} />;
+      case 'createCAPA':
+        return <CreateCAPAForm onClose={() => closeModal(id)} />;
+      case 'generateReport':
+        return <GenerateReportForm onClose={() => closeModal(id)} />;
+      case 'advancedFilter':
+        return <AdvancedFilter onApplyFilters={(filters) => console.log('Applied filters:', filters)} onClose={() => closeModal(id)} />;
+      default:
+        return modalData.content;
+    }
+  };
+
+  const getModalTitle = (id, modalData) => {
+    switch (id) {
+      case 'addFacility':
+        return 'Add New Facility';
+      case 'scheduleAudit':
+        return 'Schedule New Audit';
+      case 'createCAPA':
+        return 'Create New CAPA';
+      case 'generateReport':
+        return 'Generate Custom Report';
+      case 'advancedFilter':
+        return 'Advanced Filters';
+      default:
+        return modalData.title;
+    }
+  };
+
   return (
     <ModalContext.Provider value={{ modals, openModal, closeModal }}>
       {children}
-      {Object.entries(modals).map(([id, content]) => (
-        <Modal key={id} id={id} onClose={() => closeModal(id)}>
-          {content}
+      {Object.entries(modals).map(([id, modalData]) => (
+        <Modal 
+          key={id} 
+          id={id} 
+          title={getModalTitle(id, modalData)}
+          onClose={() => closeModal(id)}
+        >
+          {getModalContent(id, modalData)}
         </Modal>
       ))}
     </ModalContext.Provider>
