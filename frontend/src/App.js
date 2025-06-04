@@ -1641,6 +1641,666 @@ const ReportIncidentForm = ({ onClose }) => {
   );
 };
 
+// Schedule Event Form
+const ScheduleEventForm = ({ onClose }) => {
+  const [formData, setFormData] = useState({
+    title: '',
+    type: 'audit',
+    description: '',
+    date: '',
+    startTime: '',
+    endTime: '',
+    duration: '',
+    facility: '',
+    location: '',
+    organizer: '',
+    attendees: [],
+    auditor: '',
+    trainer: '',
+    reviewer: '',
+    priority: 'medium',
+    status: 'scheduled',
+    resources: '',
+    notifications: true,
+    recurring: false,
+    recurringPattern: 'weekly',
+    recurringEnd: '',
+    preparation: '',
+    agenda: '',
+    equipment: '',
+    specialInstructions: ''
+  });
+
+  const eventTypes = [
+    { value: 'audit', label: 'Audit', icon: '🔍' },
+    { value: 'meeting', label: 'Meeting', icon: '👥' },
+    { value: 'training', label: 'Training', icon: '📚' },
+    { value: 'review', label: 'Review', icon: '📋' },
+    { value: 'inspection', label: 'Inspection', icon: '🔍' },
+    { value: 'calibration', label: 'Calibration', icon: '⚙️' },
+    { value: 'maintenance', label: 'Maintenance', icon: '🔧' },
+    { value: 'assessment', label: 'Assessment', icon: '📊' }
+  ];
+
+  const facilities = ['General Hospital', 'Emergency Center', 'Pediatric Ward', 'Outpatient Clinic', 'Surgical Center', 'Laboratory', 'Radiology Department'];
+  const staffOptions = ['Dr. Smith', 'Dr. Johnson', 'Jane Doe', 'Mike Brown', 'Sarah Wilson', 'Quality Team', 'Safety Officer', 'IT Team'];
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    
+    // Calculate duration if start and end times are provided
+    if (formData.startTime && formData.endTime && !formData.duration) {
+      const start = new Date(`2024-01-01 ${formData.startTime}`);
+      const end = new Date(`2024-01-01 ${formData.endTime}`);
+      const diffHours = (end - start) / (1000 * 60 * 60);
+      formData.duration = `${diffHours} hours`;
+    }
+
+    setTimeout(() => {
+      const eventId = 'EVT-' + new Date().getFullYear() + '-' + String(Math.floor(Math.random() * 1000)).padStart(3, '0');
+      alert(`Event "${formData.title}" (${eventId}) has been scheduled successfully!${formData.notifications ? ' Notifications have been sent to attendees.' : ''}`);
+      onClose();
+    }, 1000);
+  };
+
+  const handleAttendeesChange = (attendee) => {
+    setFormData(prev => ({
+      ...prev,
+      attendees: prev.attendees.includes(attendee)
+        ? prev.attendees.filter(a => a !== attendee)
+        : [...prev.attendees, attendee]
+    }));
+  };
+
+  return (
+    <form onSubmit={handleSubmit} className="space-y-6">
+      {/* Event Basic Information */}
+      <div className="bg-blue-50 p-4 rounded-lg">
+        <h3 className="font-medium text-blue-800 mb-3">Event Information</h3>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Event Title *</label>
+            <input
+              type="text"
+              required
+              value={formData.title}
+              onChange={(e) => setFormData(prev => ({ ...prev, title: e.target.value }))}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              placeholder="Enter descriptive event title"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Event Type *</label>
+            <select
+              required
+              value={formData.type}
+              onChange={(e) => setFormData(prev => ({ ...prev, type: e.target.value }))}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            >
+              {eventTypes.map(type => (
+                <option key={type.value} value={type.value}>{type.icon} {type.label}</option>
+              ))}
+            </select>
+          </div>
+        </div>
+        <div className="mt-4">
+          <label className="block text-sm font-medium text-gray-700 mb-2">Description</label>
+          <textarea
+            value={formData.description}
+            onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
+            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            rows="3"
+            placeholder="Describe the purpose and scope of this event..."
+          />
+        </div>
+      </div>
+
+      {/* Date and Time */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">Event Date *</label>
+          <input
+            type="date"
+            required
+            value={formData.date}
+            onChange={(e) => setFormData(prev => ({ ...prev, date: e.target.value }))}
+            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+          />
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">Start Time *</label>
+          <input
+            type="time"
+            required
+            value={formData.startTime}
+            onChange={(e) => setFormData(prev => ({ ...prev, startTime: e.target.value }))}
+            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+          />
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">End Time</label>
+          <input
+            type="time"
+            value={formData.endTime}
+            onChange={(e) => setFormData(prev => ({ ...prev, endTime: e.target.value }))}
+            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+          />
+        </div>
+      </div>
+
+      {/* Location */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">Facility *</label>
+          <select
+            required
+            value={formData.facility}
+            onChange={(e) => setFormData(prev => ({ ...prev, facility: e.target.value }))}
+            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+          >
+            <option value="">Select facility</option>
+            {facilities.map(facility => (
+              <option key={facility} value={facility}>{facility}</option>
+            ))}
+          </select>
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">Specific Location</label>
+          <input
+            type="text"
+            value={formData.location}
+            onChange={(e) => setFormData(prev => ({ ...prev, location: e.target.value }))}
+            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            placeholder="Room, department, or area"
+          />
+        </div>
+      </div>
+
+      {/* Participants based on event type */}
+      <div className="bg-gray-50 p-4 rounded-lg">
+        <h4 className="font-medium text-gray-800 mb-3">Participants & Responsibilities</h4>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              {formData.type === 'audit' ? 'Lead Auditor' : 
+               formData.type === 'training' ? 'Trainer' : 
+               formData.type === 'review' ? 'Reviewer' : 'Organizer'} *
+            </label>
+            <select
+              required
+              value={formData.type === 'audit' ? formData.auditor : 
+                     formData.type === 'training' ? formData.trainer : 
+                     formData.type === 'review' ? formData.reviewer : formData.organizer}
+              onChange={(e) => {
+                const field = formData.type === 'audit' ? 'auditor' : 
+                             formData.type === 'training' ? 'trainer' : 
+                             formData.type === 'review' ? 'reviewer' : 'organizer';
+                setFormData(prev => ({ ...prev, [field]: e.target.value }));
+              }}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            >
+              <option value="">Select person</option>
+              {staffOptions.map(person => (
+                <option key={person} value={person}>{person}</option>
+              ))}
+            </select>
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Priority Level</label>
+            <select
+              value={formData.priority}
+              onChange={(e) => setFormData(prev => ({ ...prev, priority: e.target.value }))}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            >
+              <option value="low">Low</option>
+              <option value="medium">Medium</option>
+              <option value="high">High</option>
+              <option value="critical">Critical</option>
+            </select>
+          </div>
+        </div>
+
+        {/* Attendees */}
+        <div className="mt-4">
+          <label className="block text-sm font-medium text-gray-700 mb-2">Attendees</label>
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+            {staffOptions.map(person => (
+              <label key={person} className="flex items-center">
+                <input
+                  type="checkbox"
+                  checked={formData.attendees.includes(person)}
+                  onChange={() => handleAttendeesChange(person)}
+                  className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500"
+                />
+                <span className="ml-2 text-sm text-gray-700">{person}</span>
+              </label>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* Event-specific fields */}
+      {formData.type === 'training' && (
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">Training Agenda</label>
+          <textarea
+            value={formData.agenda}
+            onChange={(e) => setFormData(prev => ({ ...prev, agenda: e.target.value }))}
+            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            rows="3"
+            placeholder="Outline the training topics and schedule..."
+          />
+        </div>
+      )}
+
+      {formData.type === 'audit' && (
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">Audit Preparation Notes</label>
+          <textarea
+            value={formData.preparation}
+            onChange={(e) => setFormData(prev => ({ ...prev, preparation: e.target.value }))}
+            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            rows="3"
+            placeholder="Preparation requirements, documents needed, areas to focus on..."
+          />
+        </div>
+      )}
+
+      {/* Resources and Equipment */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">Required Resources</label>
+          <textarea
+            value={formData.resources}
+            onChange={(e) => setFormData(prev => ({ ...prev, resources: e.target.value }))}
+            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            rows="2"
+            placeholder="Personnel, materials, budget requirements..."
+          />
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">Equipment Needed</label>
+          <textarea
+            value={formData.equipment}
+            onChange={(e) => setFormData(prev => ({ ...prev, equipment: e.target.value }))}
+            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            rows="2"
+            placeholder="AV equipment, computers, measuring devices..."
+          />
+        </div>
+      </div>
+
+      {/* Recurring Event Options */}
+      <div className="bg-yellow-50 p-4 rounded-lg">
+        <div className="flex items-center mb-3">
+          <input
+            type="checkbox"
+            id="recurring"
+            checked={formData.recurring}
+            onChange={(e) => setFormData(prev => ({ ...prev, recurring: e.target.checked }))}
+            className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500"
+          />
+          <label htmlFor="recurring" className="ml-2 text-sm font-medium text-gray-700">
+            Make this a recurring event
+          </label>
+        </div>
+        
+        {formData.recurring && (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Repeat Pattern</label>
+              <select
+                value={formData.recurringPattern}
+                onChange={(e) => setFormData(prev => ({ ...prev, recurringPattern: e.target.value }))}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              >
+                <option value="daily">Daily</option>
+                <option value="weekly">Weekly</option>
+                <option value="monthly">Monthly</option>
+                <option value="quarterly">Quarterly</option>
+                <option value="annually">Annually</option>
+              </select>
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">End Recurrence</label>
+              <input
+                type="date"
+                value={formData.recurringEnd}
+                onChange={(e) => setFormData(prev => ({ ...prev, recurringEnd: e.target.value }))}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              />
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Notifications and Special Instructions */}
+      <div className="space-y-4">
+        <div>
+          <label className="flex items-center">
+            <input
+              type="checkbox"
+              checked={formData.notifications}
+              onChange={(e) => setFormData(prev => ({ ...prev, notifications: e.target.checked }))}
+              className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500"
+            />
+            <span className="ml-2 text-sm text-gray-700">Send notifications to all attendees</span>
+          </label>
+        </div>
+        
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">Special Instructions</label>
+          <textarea
+            value={formData.specialInstructions}
+            onChange={(e) => setFormData(prev => ({ ...prev, specialInstructions: e.target.value }))}
+            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            rows="2"
+            placeholder="Any special requirements, precautions, or notes for attendees..."
+          />
+        </div>
+      </div>
+
+      <div className="flex justify-end space-x-3 pt-6 border-t">
+        <button
+          type="button"
+          onClick={onClose}
+          className="px-4 py-2 text-gray-700 bg-gray-200 rounded-lg hover:bg-gray-300 transition-colors"
+        >
+          Cancel
+        </button>
+        <button
+          type="submit"
+          className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+        >
+          Schedule Event
+        </button>
+      </div>
+    </form>
+  );
+};
+
+// Export Calendar Form
+const ExportCalendarForm = ({ onClose }) => {
+  const [exportData, setExportData] = useState({
+    format: 'pdf',
+    dateRange: 'month',
+    startDate: '',
+    endDate: '',
+    eventTypes: [],
+    facilities: [],
+    includeDetails: true,
+    includeAttendees: true,
+    includeResources: false,
+    groupBy: 'date',
+    sortBy: 'chronological',
+    template: 'standard'
+  });
+
+  const [isExporting, setIsExporting] = useState(false);
+  const [exportProgress, setExportProgress] = useState(0);
+
+  const formatOptions = [
+    { value: 'pdf', label: 'PDF Document', icon: '📄' },
+    { value: 'excel', label: 'Excel Spreadsheet', icon: '📊' },
+    { value: 'csv', label: 'CSV File', icon: '📊' },
+    { value: 'ical', label: 'iCalendar (.ics)', icon: '📅' },
+    { value: 'outlook', label: 'Outlook Calendar', icon: '📧' }
+  ];
+
+  const eventTypes = ['audit', 'meeting', 'training', 'review', 'inspection', 'calibration', 'maintenance', 'assessment'];
+  const facilities = ['General Hospital', 'Emergency Center', 'Pediatric Ward', 'Outpatient Clinic', 'Surgical Center'];
+
+  const handleExport = async (e) => {
+    e.preventDefault();
+    setIsExporting(true);
+    setExportProgress(0);
+
+    // Simulate export process
+    const steps = [
+      { progress: 20, message: 'Gathering calendar data...' },
+      { progress: 40, message: 'Filtering events...' },
+      { progress: 60, message: 'Formatting document...' },
+      { progress: 80, message: 'Generating file...' },
+      { progress: 100, message: 'Export complete!' }
+    ];
+
+    for (const step of steps) {
+      await new Promise(resolve => setTimeout(resolve, 800));
+      setExportProgress(step.progress);
+    }
+
+    // Generate filename
+    const dateStr = new Date().toISOString().split('T')[0];
+    const fileName = `Healthcare_QMS_Calendar_${dateStr}.${exportData.format}`;
+    
+    // Simulate file download
+    setTimeout(() => {
+      alert(`Calendar exported successfully!\nFile: ${fileName}\nEvents included: ${Math.floor(Math.random() * 50) + 10}\nSize: ${(Math.random() * 5 + 1).toFixed(1)} MB`);
+      onClose();
+    }, 500);
+  };
+
+  const handleEventTypeChange = (type) => {
+    setExportData(prev => ({
+      ...prev,
+      eventTypes: prev.eventTypes.includes(type)
+        ? prev.eventTypes.filter(t => t !== type)
+        : [...prev.eventTypes, type]
+    }));
+  };
+
+  const handleFacilityChange = (facility) => {
+    setExportData(prev => ({
+      ...prev,
+      facilities: prev.facilities.includes(facility)
+        ? prev.facilities.filter(f => f !== facility)
+        : [...prev.facilities, facility]
+    }));
+  };
+
+  return (
+    <form onSubmit={handleExport} className="space-y-6">
+      {isExporting ? (
+        <div className="text-center space-y-4">
+          <div className="text-lg font-medium">Exporting Calendar...</div>
+          <div className="w-full bg-gray-200 rounded-full h-3">
+            <div 
+              className="bg-blue-600 h-3 rounded-full transition-all duration-500"
+              style={{ width: `${exportProgress}%` }}
+            ></div>
+          </div>
+          <div className="text-sm text-gray-600">{exportProgress}% Complete</div>
+        </div>
+      ) : (
+        <>
+          {/* Export Format */}
+          <div className="bg-blue-50 p-4 rounded-lg">
+            <h3 className="font-medium text-blue-800 mb-3">Export Format</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+              {formatOptions.map(format => (
+                <label key={format.value} className="flex items-center p-3 border border-gray-200 rounded-lg cursor-pointer hover:bg-gray-50">
+                  <input
+                    type="radio"
+                    name="format"
+                    value={format.value}
+                    checked={exportData.format === format.value}
+                    onChange={(e) => setExportData(prev => ({ ...prev, format: e.target.value }))}
+                    className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 focus:ring-blue-500"
+                  />
+                  <span className="ml-3">
+                    {format.icon} {format.label}
+                  </span>
+                </label>
+              ))}
+            </div>
+          </div>
+
+          {/* Date Range */}
+          <div>
+            <h4 className="font-medium text-gray-800 mb-3">Date Range</h4>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Range Type</label>
+                <select
+                  value={exportData.dateRange}
+                  onChange={(e) => setExportData(prev => ({ ...prev, dateRange: e.target.value }))}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                >
+                  <option value="week">This Week</option>
+                  <option value="month">This Month</option>
+                  <option value="quarter">This Quarter</option>
+                  <option value="year">This Year</option>
+                  <option value="custom">Custom Range</option>
+                </select>
+              </div>
+              {exportData.dateRange === 'custom' && (
+                <>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Start Date</label>
+                    <input
+                      type="date"
+                      value={exportData.startDate}
+                      onChange={(e) => setExportData(prev => ({ ...prev, startDate: e.target.value }))}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">End Date</label>
+                    <input
+                      type="date"
+                      value={exportData.endDate}
+                      onChange={(e) => setExportData(prev => ({ ...prev, endDate: e.target.value }))}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    />
+                  </div>
+                </>
+              )}
+            </div>
+          </div>
+
+          {/* Event Types Filter */}
+          <div>
+            <h4 className="font-medium text-gray-800 mb-3">Event Types to Include</h4>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+              {eventTypes.map(type => (
+                <label key={type} className="flex items-center">
+                  <input
+                    type="checkbox"
+                    checked={exportData.eventTypes.includes(type)}
+                    onChange={() => handleEventTypeChange(type)}
+                    className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500"
+                  />
+                  <span className="ml-2 text-sm text-gray-700 capitalize">{type}</span>
+                </label>
+              ))}
+            </div>
+          </div>
+
+          {/* Facilities Filter */}
+          <div>
+            <h4 className="font-medium text-gray-800 mb-3">Facilities to Include</h4>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+              {facilities.map(facility => (
+                <label key={facility} className="flex items-center">
+                  <input
+                    type="checkbox"
+                    checked={exportData.facilities.includes(facility)}
+                    onChange={() => handleFacilityChange(facility)}
+                    className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500"
+                  />
+                  <span className="ml-2 text-sm text-gray-700">{facility}</span>
+                </label>
+              ))}
+            </div>
+          </div>
+
+          {/* Export Options */}
+          <div className="bg-gray-50 p-4 rounded-lg">
+            <h4 className="font-medium text-gray-800 mb-3">Export Options</h4>
+            <div className="space-y-3">
+              <label className="flex items-center">
+                <input
+                  type="checkbox"
+                  checked={exportData.includeDetails}
+                  onChange={(e) => setExportData(prev => ({ ...prev, includeDetails: e.target.checked }))}
+                  className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500"
+                />
+                <span className="ml-2 text-sm text-gray-700">Include event details and descriptions</span>
+              </label>
+              <label className="flex items-center">
+                <input
+                  type="checkbox"
+                  checked={exportData.includeAttendees}
+                  onChange={(e) => setExportData(prev => ({ ...prev, includeAttendees: e.target.checked }))}
+                  className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500"
+                />
+                <span className="ml-2 text-sm text-gray-700">Include attendee lists</span>
+              </label>
+              <label className="flex items-center">
+                <input
+                  type="checkbox"
+                  checked={exportData.includeResources}
+                  onChange={(e) => setExportData(prev => ({ ...prev, includeResources: e.target.checked }))}
+                  className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500"
+                />
+                <span className="ml-2 text-sm text-gray-700">Include resource requirements</span>
+              </label>
+            </div>
+          </div>
+
+          {/* Organization Options */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Group By</label>
+              <select
+                value={exportData.groupBy}
+                onChange={(e) => setExportData(prev => ({ ...prev, groupBy: e.target.value }))}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              >
+                <option value="date">Date</option>
+                <option value="type">Event Type</option>
+                <option value="facility">Facility</option>
+                <option value="priority">Priority</option>
+              </select>
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Sort By</label>
+              <select
+                value={exportData.sortBy}
+                onChange={(e) => setExportData(prev => ({ ...prev, sortBy: e.target.value }))}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              >
+                <option value="chronological">Chronological</option>
+                <option value="priority">Priority</option>
+                <option value="facility">Facility</option>
+                <option value="type">Event Type</option>
+              </select>
+            </div>
+          </div>
+        </>
+      )}
+
+      <div className="flex justify-end space-x-3 pt-6 border-t">
+        <button
+          type="button"
+          onClick={onClose}
+          disabled={isExporting}
+          className="px-4 py-2 text-gray-700 bg-gray-200 rounded-lg hover:bg-gray-300 transition-colors disabled:opacity-50"
+        >
+          {isExporting ? 'Exporting...' : 'Cancel'}
+        </button>
+        <button
+          type="submit"
+          disabled={isExporting}
+          className="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50"
+        >
+          {isExporting ? 'Exporting...' : 'Export Calendar'}
+        </button>
+      </div>
+    </form>
+  );
+};
+
 // Generate Report Form
 const GenerateReportForm = ({ onClose }) => {
   const [formData, setFormData] = useState({
