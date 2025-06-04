@@ -1677,7 +1677,10 @@ const AuditManagement = () => {
               <option value="in progress">In Progress</option>
               <option value="completed">Completed</option>
             </select>
-            <button className="flex items-center px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">
+            <button 
+              onClick={() => openModal('advancedFilter')}
+              className="flex items-center px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+            >
               <Filter size={16} className="mr-2" />
               More Filters
             </button>
