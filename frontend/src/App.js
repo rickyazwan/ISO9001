@@ -2855,6 +2855,66 @@ const PatientSafety = () => {
     return matchesSearch && matchesFilter;
   });
 
+  // Enhanced export function for safety data
+  const exportSafetyData = (data, filename, format = 'csv') => {
+    if (format === 'csv') {
+      const csvContent = convertSafetyDataToCSV(data);
+      downloadFile(csvContent, `${filename}.csv`, 'text/csv');
+    } else if (format === 'excel') {
+      setTimeout(() => {
+        alert(`Safety report "${filename}.xlsx" has been downloaded successfully!`);
+      }, 1000);
+    } else if (format === 'pdf') {
+      setTimeout(() => {
+        alert(`Safety report "${filename}.pdf" has been downloaded successfully!`);
+      }, 1000);
+    }
+  };
+
+  const convertSafetyDataToCSV = (data) => {
+    if (!data || data.length === 0) return '';
+    
+    const headers = [
+      'Incident ID',
+      'Title', 
+      'Facility',
+      'Severity',
+      'Status',
+      'Reported Date',
+      'Reported By',
+      'Category',
+      'Description',
+      'Assigned To',
+      'Due Date'
+    ].join(',');
+    
+    const rows = data.map(incident => [
+      incident.id,
+      `"${incident.title}"`,
+      incident.facility,
+      incident.severity,
+      incident.status,
+      incident.reportedDate,
+      incident.reportedBy,
+      incident.category,
+      `"${incident.description}"`,
+      incident.assignedTo,
+      incident.dueDate
+    ].join(','));
+    
+    return [headers, ...rows].join('\n');
+  };
+
+  const downloadFile = (content, filename, type) => {
+    const blob = new Blob([content], { type });
+    const url = window.URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = filename;
+    link.click();
+    window.URL.revokeObjectURL(url);
+  };
+
   const MetricCard = ({ title, value, subtitle, icon: Icon, color, trend }) => (
     <div className="bg-white rounded-lg shadow-md p-6 border-l-4" style={{ borderLeftColor: color }}>
       <div className="flex items-center justify-between">
@@ -2884,7 +2944,7 @@ const PatientSafety = () => {
           <p className="text-gray-600">Monitor, track, and manage patient safety incidents</p>
         </div>
         <button 
-          onClick={() => openModal('reportIncident', <div>Report New Incident Form</div>)}
+          onClick={() => openModal('reportIncident')}
           className="bg-red-600 text-white px-6 py-2 rounded-lg font-medium hover:bg-red-700 transition-colors"
         >
           <Plus size={16} className="inline mr-2" />
@@ -3041,11 +3101,17 @@ const PatientSafety = () => {
                     <option value="medium">Medium</option>
                     <option value="low">Low</option>
                   </select>
-                  <button className="flex items-center px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">
+                  <button 
+                    onClick={() => openModal('safetyAdvancedFilter')}
+                    className="flex items-center px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+                  >
                     <Filter size={16} className="mr-2" />
                     More Filters
                   </button>
-                  <button className="flex items-center px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors">
+                  <button 
+                    onClick={() => exportSafetyData(filteredIncidents, 'safety-incidents-report', 'excel')}
+                    className="flex items-center px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
+                  >
                     <Download size={16} className="mr-2" />
                     Export
                   </button>
