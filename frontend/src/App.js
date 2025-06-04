@@ -49,6 +49,17 @@ import {
 } from 'recharts';
 import clsx from 'clsx';
 import './App.css';
+import { 
+  UserRoleProvider, 
+  useUserRole, 
+  RoleSwitcher, 
+  RoleBasedActionButtons, 
+  EnhancedRecentReports, 
+  TemplateManagement, 
+  AuditTableRow, 
+  CAPAListItem, 
+  sampleData 
+} from './RoleBasedEnhancements';
 
 // Language Context
 const LanguageContext = createContext();
