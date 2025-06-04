@@ -4692,6 +4692,7 @@ const dashboardData = {
 // Navigation Component
 const Navigation = ({ activeTab, setActiveTab, sidebarOpen, setSidebarOpen }) => {
   const { t } = useLanguage();
+  const { user, logout } = useAuth();
 
   const navItems = [
     { id: 'dashboard', label: t.dashboard, icon: LayoutDashboard },
@@ -4704,6 +4705,12 @@ const Navigation = ({ activeTab, setActiveTab, sidebarOpen, setSidebarOpen }) =>
     { id: 'documents', label: t.documents, icon: FileText },
     { id: 'settings', label: t.settings, icon: Settings }
   ];
+
+  const handleLogout = () => {
+    if (window.confirm('Are you sure you want to logout?')) {
+      logout();
+    }
+  };
 
   return (
     <>
@@ -4731,6 +4738,22 @@ const Navigation = ({ activeTab, setActiveTab, sidebarOpen, setSidebarOpen }) =>
             </div>
           </div>
 
+          {/* User Info */}
+          {user && (
+            <div className="px-4 py-4 border-b bg-gray-50">
+              <div className="flex items-center space-x-3">
+                <div className="w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center">
+                  <User className="text-white" size={20} />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-medium text-gray-900 truncate">{user.name}</p>
+                  <p className="text-xs text-gray-500 truncate">{user.role}</p>
+                  <p className="text-xs text-blue-600 truncate">{user.facility}</p>
+                </div>
+              </div>
+            </div>
+          )}
+
           {/* Navigation */}
           <nav className="flex-1 px-4 py-6 space-y-2">
             {navItems.map((item) => {
@@ -4755,6 +4778,17 @@ const Navigation = ({ activeTab, setActiveTab, sidebarOpen, setSidebarOpen }) =>
               );
             })}
           </nav>
+
+          {/* Logout Button */}
+          <div className="p-4 border-t">
+            <button
+              onClick={handleLogout}
+              className="w-full flex items-center px-4 py-3 rounded-lg text-left transition-colors text-red-600 hover:bg-red-50"
+            >
+              <LogOut size={20} className="mr-3" />
+              Logout
+            </button>
+          </div>
         </div>
       </div>
 
