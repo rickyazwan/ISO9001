@@ -4288,10 +4288,120 @@ const CalendarScheduling = () => {
       facility: 'Head Office',
       status: 'pending',
       priority: 'low'
+    },
+    {
+      id: 6,
+      title: 'Equipment Calibration',
+      type: 'calibration',
+      date: '2024-06-24',
+      time: '11:00',
+      duration: '2 hours',
+      technician: 'Tech Support',
+      facility: 'Laboratory',
+      status: 'scheduled',
+      priority: 'high'
+    },
+    {
+      id: 7,
+      title: 'Monthly Quality Meeting',
+      type: 'meeting',
+      date: '2024-06-28',
+      time: '13:00',
+      duration: '3 hours',
+      attendees: ['All Department Heads'],
+      facility: 'General Hospital',
+      status: 'confirmed',
+      priority: 'high'
     }
   ];
 
   const upcomingEvents = events.filter(event => new Date(event.date) >= new Date()).slice(0, 5);
+
+  // Enhanced date navigation
+  const navigateMonth = (direction) => {
+    const newDate = new Date(currentDate);
+    newDate.setMonth(currentDate.getMonth() + direction);
+    setCurrentDate(newDate);
+  };
+
+  const navigateWeek = (direction) => {
+    const newDate = new Date(currentDate);
+    newDate.setDate(currentDate.getDate() + (direction * 7));
+    setCurrentDate(newDate);
+  };
+
+  const getMonthDays = () => {
+    const year = currentDate.getFullYear();
+    const month = currentDate.getMonth();
+    const firstDay = new Date(year, month, 1);
+    const lastDay = new Date(year, month + 1, 0);
+    const daysInMonth = lastDay.getDate();
+    const startingDayOfWeek = firstDay.getDay();
+    
+    const days = [];
+    
+    // Previous month days
+    const prevMonth = new Date(year, month - 1, 0);
+    for (let i = startingDayOfWeek - 1; i >= 0; i--) {
+      days.push({
+        day: prevMonth.getDate() - i,
+        isCurrentMonth: false,
+        date: new Date(year, month - 1, prevMonth.getDate() - i)
+      });
+    }
+    
+    // Current month days
+    for (let day = 1; day <= daysInMonth; day++) {
+      days.push({
+        day,
+        isCurrentMonth: true,
+        date: new Date(year, month, day)
+      });
+    }
+    
+    // Next month days
+    const totalCells = 42; // 6 rows × 7 days
+    const remainingCells = totalCells - days.length;
+    for (let day = 1; day <= remainingCells; day++) {
+      days.push({
+        day,
+        isCurrentMonth: false,
+        date: new Date(year, month + 1, day)
+      });
+    }
+    
+    return days;
+  };
+
+  const getWeekDays = () => {
+    const startOfWeek = new Date(currentDate);
+    const day = startOfWeek.getDay();
+    const diff = startOfWeek.getDate() - day;
+    startOfWeek.setDate(diff);
+    
+    const days = [];
+    for (let i = 0; i < 7; i++) {
+      const date = new Date(startOfWeek);
+      date.setDate(startOfWeek.getDate() + i);
+      days.push({
+        day: date.getDate(),
+        isCurrentMonth: true,
+        date,
+        dayName: date.toLocaleDateString('en-US', { weekday: 'short' })
+      });
+    }
+    return days;
+  };
+
+  const getEventsForDate = (date) => {
+    const dateStr = date.toISOString().split('T')[0];
+    return events.filter(event => event.date === dateStr);
+  };
+
+  const isToday = (date) => {
+    const today = new Date();
+    return date.toDateString() === today.toDateString();
+  };
 
   const getEventColor = (type) => {
     switch (type) {
@@ -4299,6 +4409,8 @@ const CalendarScheduling = () => {
       case 'meeting': return '#3b82f6';
       case 'training': return '#10b981';
       case 'review': return '#8b5cf6';
+      case 'calibration': return '#f59e0b';
+      case 'maintenance': return '#6b7280';
       default: return '#6b7280';
     }
   };
@@ -4330,6 +4442,7 @@ const CalendarScheduling = () => {
         <p>🏢 {event.facility}</p>
         {event.auditor && <p>👤 {event.auditor}</p>}
         {event.trainer && <p>👤 {event.trainer}</p>}
+        {event.technician && <p>👤 {event.technician}</p>}
       </div>
       <div className="mt-2">
         <span className={clsx(
@@ -4344,6 +4457,125 @@ const CalendarScheduling = () => {
     </div>
   );
 
+  const MonthView = () => {
+    const days = getMonthDays();
+    
+    return (
+      <div className="space-y-4">
+        <div className="grid grid-cols-7 gap-1">
+          {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(day => (
+            <div key={day} className="text-center text-sm font-medium text-gray-500 py-2">
+              {day}
+            </div>
+          ))}
+          {days.map((dayInfo, index) => {
+            const dayEvents = getEventsForDate(dayInfo.date);
+            const isTodayDate = isToday(dayInfo.date);
+            
+            return (
+              <div
+                key={index}
+                className={clsx(
+                  "min-h-24 p-1 border border-gray-200 cursor-pointer hover:bg-gray-50",
+                  dayInfo.isCurrentMonth ? "bg-white" : "bg-gray-50",
+                  isTodayDate && "bg-blue-50 border-blue-300"
+                )}
+                onClick={() => {
+                  setCurrentDate(dayInfo.date);
+                  if (dayEvents.length > 0) {
+                    setSelectedEvent(dayEvents[0]);
+                  }
+                }}
+              >
+                <div className={clsx(
+                  "text-sm text-center mb-1",
+                  dayInfo.isCurrentMonth ? "text-gray-900" : "text-gray-400",
+                  isTodayDate && "font-bold text-blue-600"
+                )}>
+                  {dayInfo.day}
+                </div>
+                <div className="space-y-1">
+                  {dayEvents.slice(0, 2).map(event => (
+                    <div
+                      key={event.id}
+                      className="text-xs p-1 rounded truncate"
+                      style={{ backgroundColor: getEventColor(event.type) + '20', color: getEventColor(event.type) }}
+                    >
+                      {event.title}
+                    </div>
+                  ))}
+                  {dayEvents.length > 2 && (
+                    <div className="text-xs text-gray-500 text-center">
+                      +{dayEvents.length - 2} more
+                    </div>
+                  )}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    );
+  };
+
+  const WeekView = () => {
+    const days = getWeekDays();
+    const hours = Array.from({ length: 24 }, (_, i) => i);
+    
+    return (
+      <div className="space-y-4">
+        <div className="grid grid-cols-8 gap-1">
+          <div className="text-sm font-medium text-gray-500 py-2">Time</div>
+          {days.map((dayInfo, index) => (
+            <div key={index} className="text-center">
+              <div className="text-sm font-medium text-gray-700">{dayInfo.dayName}</div>
+              <div className={clsx(
+                "text-lg font-bold",
+                isToday(dayInfo.date) ? "text-blue-600" : "text-gray-900"
+              )}>
+                {dayInfo.day}
+              </div>
+            </div>
+          ))}
+        </div>
+        
+        <div className="max-h-96 overflow-y-auto border border-gray-200 rounded-lg">
+          <div className="grid grid-cols-8 gap-1">
+            {hours.map(hour => (
+              <React.Fragment key={hour}>
+                <div className="text-xs text-gray-500 p-2 border-r border-gray-100">
+                  {hour.toString().padStart(2, '0')}:00
+                </div>
+                {days.map((dayInfo, dayIndex) => {
+                  const dayEvents = getEventsForDate(dayInfo.date);
+                  const hourEvents = dayEvents.filter(event => {
+                    const eventHour = parseInt(event.time.split(':')[0]);
+                    return eventHour === hour;
+                  });
+                  
+                  return (
+                    <div key={dayIndex} className="min-h-12 p-1 border-r border-b border-gray-100 relative">
+                      {hourEvents.map(event => (
+                        <div
+                          key={event.id}
+                          className="text-xs p-1 rounded mb-1 cursor-pointer hover:shadow-sm"
+                          style={{ backgroundColor: getEventColor(event.type) + '30', color: getEventColor(event.type) }}
+                          onClick={() => setSelectedEvent(event)}
+                        >
+                          {event.title}
+                        </div>
+                      ))}
+                    </div>
+                  );
+                })}
+              </React.Fragment>
+            ))}
+          </div>
+        </div>
+      </div>
+    );
+  };
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -4354,13 +4586,16 @@ const CalendarScheduling = () => {
         </div>
         <div className="flex gap-3">
           <button 
-            onClick={() => openModal('scheduleEvent', <div>Schedule New Event Form</div>)}
+            onClick={() => openModal('scheduleEvent')}
             className="bg-blue-600 text-white px-6 py-2 rounded-lg font-medium hover:bg-blue-700 transition-colors"
           >
             <Plus size={16} className="inline mr-2" />
             Schedule Event
           </button>
-          <button className="bg-green-600 text-white px-6 py-2 rounded-lg font-medium hover:bg-green-700 transition-colors">
+          <button 
+            onClick={() => openModal('exportCalendar')}
+            className="bg-green-600 text-white px-6 py-2 rounded-lg font-medium hover:bg-green-700 transition-colors"
+          >
             <Download size={16} className="inline mr-2" />
             Export Calendar
           </button>
@@ -4368,10 +4603,36 @@ const CalendarScheduling = () => {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Calendar View */}
+        {/* Enhanced Calendar View */}
         <div className="lg:col-span-2 bg-white rounded-lg shadow-md p-6">
+          {/* Calendar Header with Navigation */}
           <div className="flex justify-between items-center mb-6">
-            <h3 className="text-lg font-semibold">June 2024</h3>
+            <div className="flex items-center gap-4">
+              <button
+                onClick={() => viewMode === 'month' ? navigateMonth(-1) : navigateWeek(-1)}
+                className="p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded"
+              >
+                ⟨
+              </button>
+              <h3 className="text-lg font-semibold">
+                {viewMode === 'month' 
+                  ? currentDate.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })
+                  : `Week of ${getWeekDays()[0]?.date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} - ${getWeekDays()[6]?.date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}`
+                }
+              </h3>
+              <button
+                onClick={() => viewMode === 'month' ? navigateMonth(1) : navigateWeek(1)}
+                className="p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded"
+              >
+                ⟩
+              </button>
+              <button
+                onClick={() => setCurrentDate(new Date())}
+                className="px-3 py-1 text-sm bg-gray-100 text-gray-700 rounded hover:bg-gray-200 transition-colors"
+              >
+                Today
+              </button>
+            </div>
             <div className="flex gap-2">
               <button 
                 onClick={() => setViewMode('month')}
@@ -4394,36 +4655,11 @@ const CalendarScheduling = () => {
             </div>
           </div>
 
-          {/* Mini Calendar Grid */}
-          <div className="grid grid-cols-7 gap-1 mb-4">
-            {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(day => (
-              <div key={day} className="text-center text-sm font-medium text-gray-500 py-2">
-                {day}
-              </div>
-            ))}
-            {Array.from({ length: 35 }, (_, i) => {
-              const dayNumber = i - 2; // Starting from day -2 to show previous month days
-              const isCurrentMonth = dayNumber > 0 && dayNumber <= 30;
-              const hasEvent = isCurrentMonth && events.some(event => parseInt(event.date.split('-')[2]) === dayNumber);
-              
-              return (
-                <div
-                  key={i}
-                  className={clsx(
-                    "text-center py-2 text-sm cursor-pointer rounded hover:bg-blue-50",
-                    isCurrentMonth ? "text-gray-900" : "text-gray-300",
-                    hasEvent && "bg-blue-100 font-medium",
-                    dayNumber === 18 && "bg-blue-600 text-white" // Today
-                  )}
-                >
-                  {isCurrentMonth ? dayNumber : dayNumber <= 0 ? 30 + dayNumber : dayNumber - 30}
-                </div>
-              );
-            })}
-          </div>
+          {/* Calendar Grid */}
+          {viewMode === 'month' ? <MonthView /> : <WeekView />}
 
           {/* Event Legend */}
-          <div className="border-t pt-4">
+          <div className="border-t pt-4 mt-6">
             <h4 className="text-sm font-medium text-gray-700 mb-3">Event Types</h4>
             <div className="flex flex-wrap gap-4 text-xs">
               <div className="flex items-center gap-2">
@@ -4441,6 +4677,14 @@ const CalendarScheduling = () => {
               <div className="flex items-center gap-2">
                 <div className="w-3 h-3 bg-purple-500 rounded"></div>
                 <span>Reviews</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="w-3 h-3 bg-yellow-500 rounded"></div>
+                <span>Calibration</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="w-3 h-3 bg-gray-500 rounded"></div>
+                <span>Maintenance</span>
               </div>
             </div>
           </div>
