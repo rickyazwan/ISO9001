@@ -4557,24 +4557,26 @@ function App() {
   };
 
   return (
-    <LanguageProvider>
-      <ModalProvider>
-        <div className="min-h-screen bg-gray-50">
-          <Navigation 
-            activeTab={activeTab}
-            setActiveTab={setActiveTab}
-            sidebarOpen={sidebarOpen}
-            setSidebarOpen={setSidebarOpen}
-          />
-          
-          <div className="lg:ml-64 min-h-screen">
-            <main className="p-4 lg:p-8 pt-16 lg:pt-8">
-              {renderContent()}
-            </main>
+    <UserRoleProvider>
+      <LanguageProvider>
+        <ModalProvider>
+          <div className="min-h-screen bg-gray-50">
+            <Navigation 
+              activeTab={activeTab}
+              setActiveTab={setActiveTab}
+              sidebarOpen={sidebarOpen}
+              setSidebarOpen={setSidebarOpen}
+            />
+            
+            <div className="lg:ml-64 min-h-screen">
+              <main className="p-4 lg:p-8 pt-16 lg:pt-8">
+                {renderContent()}
+              </main>
+            </div>
           </div>
-        </div>
-      </ModalProvider>
-    </LanguageProvider>
+        </ModalProvider>
+      </LanguageProvider>
+    </UserRoleProvider>
   );
 }
 
