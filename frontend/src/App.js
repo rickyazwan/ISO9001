@@ -8780,6 +8780,16 @@ const QualityDocuments = () => {
 
 // Main App Component
 function App() {
+  return (
+    <AuthProvider>
+      <AppContent />
+    </AuthProvider>
+  );
+}
+
+// Main App Content Component
+function AppContent() {
+  const { isAuthenticated, authMode, setAuthMode, login, signup } = useAuth();
   const [activeTab, setActiveTab] = useState('dashboard');
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
@@ -8808,6 +8818,33 @@ function App() {
     }
   };
 
+  // Show authentication forms if not authenticated
+  if (!isAuthenticated) {
+    if (authMode === 'signup') {
+      return (
+        <SignUpForm 
+          onSignUp={signup}
+          onSwitchToLogin={() => setAuthMode('login')}
+        />
+      );
+    } else {
+      return (
+        <div>
+          <LoginForm onLogin={login} />
+          <div className="fixed bottom-4 right-4">
+            <button
+              onClick={() => setAuthMode('signup')}
+              className="bg-green-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-green-700 transition-colors"
+            >
+              New to QMS? Sign Up
+            </button>
+          </div>
+        </div>
+      );
+    }
+  }
+
+  // Show main application if authenticated
   return (
     <UserRoleProvider>
       <LanguageProvider>
