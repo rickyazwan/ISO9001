@@ -1162,7 +1162,7 @@ function App() {
           ]}
         />;
       case 'settings':
-        return <Settings />;
+        return <SystemSettings />;
       default:
         return <Dashboard />;
     }
