@@ -176,7 +176,7 @@ const ModalProvider = ({ children }) => {
       case 'reportIncident':
         return 'Report Patient Safety Incident';
       case 'safetyAdvancedFilter':
-        return 'Advanced Safety Filters';
+        return 'Safety Advanced Filter (Removed)';
       default:
         return modalData.title;
     }
