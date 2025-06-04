@@ -916,7 +916,7 @@ const CAPAManagement = () => {
 };
 
 // Settings Component
-const Settings = () => {
+const SystemSettings = () => {
   const { language, setLanguage, t } = useLanguage();
   const [districtName, setDistrictName] = useState('Metro Health District');
   const [users, setUsers] = useState([
