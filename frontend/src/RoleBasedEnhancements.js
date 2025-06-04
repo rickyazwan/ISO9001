@@ -1,5 +1,6 @@
 import React, { useState, createContext, useContext } from 'react';
 import { Eye, Edit, Trash2, Download, Play, Settings } from 'lucide-react';
+import { handleAction } from './ActionImplementations';
 
 // User Role Context
 const UserRoleContext = createContext();
@@ -132,7 +133,7 @@ export const RoleSwitcher = () => {
   );
 };
 
-// Enhanced Action Buttons Component
+// Enhanced Action Buttons Component with Functional Implementation
 export const RoleBasedActionButtons = ({ 
   type, // 'audit', 'capa', 'report'
   item, 
@@ -140,37 +141,52 @@ export const RoleBasedActionButtons = ({
   onEdit, 
   onDelete, 
   onDownload,
-  onRun 
+  onRun,
+  openModal // Pass the modal function from the main app
 }) => {
   const { currentUser } = useUserRole();
   const permissions = currentUser.permissions[type];
 
-  const handleAction = (action, callback) => {
-    if (callback) {
-      callback(item);
-    } else {
-      // Default actions with notifications
-      switch (action) {
-        case 'view':
-          alert(`Viewing ${type} "${item.title || item.name}"`);
-          break;
-        case 'edit':
-          alert(`Editing ${type} "${item.title || item.name}"`);
-          break;
-        case 'delete':
-          if (window.confirm(`Are you sure you want to delete this ${type}?`)) {
-            alert(`${type} "${item.title || item.name}" has been deleted`);
-          }
-          break;
-        case 'download':
-          alert(`Downloading ${type} "${item.title || item.name}"`);
-          break;
-        case 'run':
-          alert(`Running ${type} "${item.title || item.name}"`);
-          break;
-        default:
-          break;
-      }
+  const executeAction = (action) => {
+    // Use custom handlers if provided, otherwise use default implementations
+    switch (action) {
+      case 'view':
+        if (onView) {
+          onView(item);
+        } else {
+          handleAction(type, 'view', item, openModal);
+        }
+        break;
+      case 'edit':
+        if (onEdit) {
+          onEdit(item);
+        } else {
+          handleAction(type, 'edit', item, openModal);
+        }
+        break;
+      case 'delete':
+        if (onDelete) {
+          onDelete(item);
+        } else {
+          handleAction(type, 'delete', item, openModal);
+        }
+        break;
+      case 'download':
+        if (onDownload) {
+          onDownload(item);
+        } else {
+          handleAction(type, 'download', item, openModal);
+        }
+        break;
+      case 'run':
+        if (onRun) {
+          onRun(item);
+        } else {
+          handleAction(type, 'run', item, openModal);
+        }
+        break;
+      default:
+        alert(`Action ${action} not implemented`);
     }
   };
 
@@ -178,9 +194,9 @@ export const RoleBasedActionButtons = ({
     <div className="flex items-center space-x-2">
       {permissions.view && (
         <button 
-          onClick={() => handleAction('view', onView)}
-          className="text-blue-600 hover:text-blue-800 transition-colors"
-          title="View"
+          onClick={() => executeAction('view')}
+          className="text-blue-600 hover:text-blue-800 transition-colors p-1 rounded hover:bg-blue-50"
+          title="View Details"
         >
           <Eye size={16} />
         </button>
@@ -188,8 +204,8 @@ export const RoleBasedActionButtons = ({
       
       {permissions.edit && (
         <button 
-          onClick={() => handleAction('edit', onEdit)}
-          className="text-gray-600 hover:text-gray-800 transition-colors"
+          onClick={() => executeAction('edit')}
+          className="text-gray-600 hover:text-gray-800 transition-colors p-1 rounded hover:bg-gray-50"
           title="Edit"
         >
           <Edit size={16} />
@@ -198,8 +214,8 @@ export const RoleBasedActionButtons = ({
       
       {permissions.delete && (
         <button 
-          onClick={() => handleAction('delete', onDelete)}
-          className="text-red-600 hover:text-red-800 transition-colors"
+          onClick={() => executeAction('delete')}
+          className="text-red-600 hover:text-red-800 transition-colors p-1 rounded hover:bg-red-50"
           title="Delete"
         >
           <Trash2 size={16} />
@@ -208,8 +224,8 @@ export const RoleBasedActionButtons = ({
       
       {onDownload && (
         <button 
-          onClick={() => handleAction('download', onDownload)}
-          className="text-green-600 hover:text-green-800 transition-colors"
+          onClick={() => executeAction('download')}
+          className="text-green-600 hover:text-green-800 transition-colors p-1 rounded hover:bg-green-50"
           title="Download"
         >
           <Download size={16} />
@@ -218,8 +234,8 @@ export const RoleBasedActionButtons = ({
       
       {onRun && permissions.run && (
         <button 
-          onClick={() => handleAction('run', onRun)}
-          className="text-purple-600 hover:text-purple-800 transition-colors"
+          onClick={() => executeAction('run')}
+          className="text-purple-600 hover:text-purple-800 transition-colors p-1 rounded hover:bg-purple-50"
           title="Run"
         >
           <Play size={16} />
