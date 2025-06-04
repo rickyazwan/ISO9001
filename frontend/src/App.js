@@ -192,6 +192,10 @@ const ModalProvider = ({ children }) => {
         return 'Report Patient Safety Incident';
       case 'safetyAdvancedFilter':
         return 'Safety Advanced Filter (Removed)';
+      case 'scheduleEvent':
+        return 'Schedule New Event';
+      case 'exportCalendar':
+        return 'Export Calendar';
       default:
         return modalData.title;
     }
