@@ -1440,14 +1440,14 @@ const Dashboard = () => {
         <p className="text-blue-100">Monitor and manage healthcare quality across all facilities</p>
         <div className="mt-6 flex items-center space-x-4">
           <button 
-            onClick={() => openModal('addFacility', <div>Add Facility Form</div>)}
+            onClick={() => openModal('addFacility')}
             className="bg-white text-blue-600 px-6 py-2 rounded-lg font-medium hover:bg-blue-50 transition-colors"
           >
             <Plus size={16} className="inline mr-2" />
             Add Facility
           </button>
           <button 
-            onClick={() => openModal('scheduleAudit', <div>Schedule Audit Form</div>)}
+            onClick={() => openModal('scheduleAudit')}
             className="bg-blue-500 text-white px-6 py-2 rounded-lg font-medium hover:bg-blue-400 transition-colors"
           >
             <Calendar size={16} className="inline mr-2" />
