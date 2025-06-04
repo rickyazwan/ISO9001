@@ -2875,44 +2875,11 @@ function App() {
       case 'safety':
         return <PatientSafety />;
       case 'calendar':
-        return <PlaceholderComponent 
-          title="Calendar & Scheduling" 
-          description="Schedule and manage audit activities and events"
-          features={[
-            'Interactive calendar view',
-            'Audit scheduling and management',
-            'Event notifications and reminders',
-            'Resource allocation tracking',
-            'Multi-facility calendar coordination',
-            'Integration with audit management'
-          ]}
-        />;
+        return <CalendarScheduling />;
       case 'reference':
-        return <PlaceholderComponent 
-          title="ISO 9001 Reference Guide" 
-          description="Comprehensive ISO 9001 healthcare implementation guide"
-          features={[
-            'Searchable ISO 9001 clauses with healthcare examples',
-            'Common non-conformances (NCRs) database',
-            'Audit questions and checklists',
-            'Best practices and implementation guides',
-            'Healthcare-specific interpretations',
-            'Regulatory compliance mapping'
-          ]}
-        />;
+        return <ISO9001ReferenceGuide />;
       case 'documents':
-        return <PlaceholderComponent 
-          title="Quality Documents" 
-          description="Manage quality manuals, SOPs, and reports"
-          features={[
-            'Document upload and storage',
-            'Version control and approval workflows',
-            'Document categorization and tagging',
-            'Search and retrieval functionality',
-            'Access control and permissions',
-            'Document expiry and review notifications'
-          ]}
-        />;
+        return <QualityDocuments />;
       case 'settings':
         return <SystemSettings />;
       default:
