@@ -2561,6 +2561,1050 @@ const GenerateReportForm = ({ onClose }) => {
   );
 };
 
+// Upload Document Form
+const UploadDocumentForm = ({ onClose }) => {
+  const [formData, setFormData] = useState({
+    title: '',
+    category: 'SOP',
+    version: '1.0',
+    description: '',
+    author: '',
+    facility: '',
+    department: '',
+    keywords: '',
+    priority: 'medium',
+    reviewDate: '',
+    approver: '',
+    files: null,
+    approvalRequired: true,
+    notifyTeam: true,
+    documentType: 'pdf',
+    classification: 'internal',
+    retentionPeriod: '7years'
+  });
+
+  const [uploadProgress, setUploadProgress] = useState(0);
+  const [isUploading, setIsUploading] = useState(false);
+  const [uploadedFile, setUploadedFile] = useState(null);
+
+  const categories = ['Quality Manual', 'SOP', 'Policy', 'Reports', 'Template', 'Form', 'Guideline', 'Training Material'];
+  const facilities = ['General Hospital', 'Emergency Center', 'Pediatric Ward', 'Outpatient Clinic', 'All Facilities'];
+  const departments = ['Quality Assurance', 'Clinical Operations', 'Administration', 'IT', 'HR', 'Finance', 'Pharmacy', 'Laboratory'];
+  const approvers = ['Quality Manager', 'Medical Director', 'CEO', 'Department Head', 'Compliance Officer'];
+
+  const handleFileChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      // Validate file size (max 50MB)
+      if (file.size > 50 * 1024 * 1024) {
+        alert('File size must be less than 50MB');
+        return;
+      }
+
+      // Validate file type
+      const allowedTypes = ['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'application/vnd.ms-excel', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'];
+      if (!allowedTypes.includes(file.type)) {
+        alert('Only PDF, Word, and Excel files are allowed');
+        return;
+      }
+
+      setFormData(prev => ({ ...prev, files: file }));
+      
+      // Convert file to base64 for storage (as per instructions)
+      const reader = new FileReader();
+      reader.onload = () => {
+        setUploadedFile({
+          name: file.name,
+          size: file.size,
+          type: file.type,
+          content: reader.result // This will be base64 encoded
+        });
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    if (!uploadedFile) {
+      alert('Please select a file to upload');
+      return;
+    }
+
+    setIsUploading(true);
+    setUploadProgress(0);
+
+    // Simulate file upload progress
+    const progressInterval = setInterval(() => {
+      setUploadProgress(prev => {
+        if (prev >= 100) {
+          clearInterval(progressInterval);
+          setIsUploading(false);
+          
+          // Generate document ID
+          const docId = 'DOC-' + new Date().getFullYear() + '-' + String(Math.floor(Math.random() * 1000)).padStart(3, '0');
+          
+          setTimeout(() => {
+            alert(`Document "${formData.title}" has been uploaded successfully! Document ID: ${docId}\n\nThe document will be sent for approval workflow.`);
+            onClose();
+          }, 500);
+          
+          return 100;
+        }
+        return prev + Math.random() * 15;
+      });
+    }, 200);
+  };
+
+  const formatFileSize = (bytes) => {
+    if (bytes === 0) return '0 Bytes';
+    const k = 1024;
+    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+  };
+
+  return (
+    <form onSubmit={handleSubmit} className="space-y-6">
+      {/* Document Information */}
+      <div className="bg-blue-50 p-4 rounded-lg">
+        <h3 className="font-medium text-blue-800 mb-3">Document Information</h3>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Document Title *</label>
+            <input
+              type="text"
+              required
+              value={formData.title}
+              onChange={(e) => setFormData(prev => ({ ...prev, title: e.target.value }))}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              placeholder="Enter document title"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Category *</label>
+            <select
+              required
+              value={formData.category}
+              onChange={(e) => setFormData(prev => ({ ...prev, category: e.target.value }))}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            >
+              {categories.map(category => (
+                <option key={category} value={category}>{category}</option>
+              ))}
+            </select>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Version *</label>
+            <input
+              type="text"
+              required
+              value={formData.version}
+              onChange={(e) => setFormData(prev => ({ ...prev, version: e.target.value }))}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              placeholder="e.g., 1.0"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Author *</label>
+            <input
+              type="text"
+              required
+              value={formData.author}
+              onChange={(e) => setFormData(prev => ({ ...prev, author: e.target.value }))}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              placeholder="Document author"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Priority</label>
+            <select
+              value={formData.priority}
+              onChange={(e) => setFormData(prev => ({ ...prev, priority: e.target.value }))}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            >
+              <option value="low">Low</option>
+              <option value="medium">Medium</option>
+              <option value="high">High</option>
+              <option value="critical">Critical</option>
+            </select>
+          </div>
+        </div>
+
+        <div className="mt-4">
+          <label className="block text-sm font-medium text-gray-700 mb-2">Description *</label>
+          <textarea
+            required
+            value={formData.description}
+            onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
+            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            rows="3"
+            placeholder="Brief description of the document content and purpose..."
+          />
+        </div>
+      </div>
+
+      {/* File Upload */}
+      <div className="bg-gray-50 p-4 rounded-lg">
+        <h3 className="font-medium text-gray-800 mb-3">File Upload</h3>
+        <div className="space-y-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Select Document File *</label>
+            <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-blue-400 transition-colors">
+              <input
+                type="file"
+                onChange={handleFileChange}
+                accept=".pdf,.doc,.docx,.xls,.xlsx"
+                className="hidden"
+                id="fileUpload"
+              />
+              <label htmlFor="fileUpload" className="cursor-pointer">
+                <Upload size={32} className="mx-auto text-gray-400 mb-2" />
+                <p className="text-sm text-gray-600">Click to upload or drag and drop</p>
+                <p className="text-xs text-gray-500 mt-1">PDF, Word, Excel files (max 50MB)</p>
+              </label>
+            </div>
+          </div>
+
+          {uploadedFile && (
+            <div className="bg-white p-4 rounded-lg border border-gray-200">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-3">
+                  <div className="text-2xl">
+                    {uploadedFile.type.includes('pdf') ? '📄' : 
+                     uploadedFile.type.includes('word') ? '📝' : '📊'}
+                  </div>
+                  <div>
+                    <p className="font-medium text-gray-900">{uploadedFile.name}</p>
+                    <p className="text-sm text-gray-500">{formatFileSize(uploadedFile.size)}</p>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setUploadedFile(null);
+                    setFormData(prev => ({ ...prev, files: null }));
+                  }}
+                  className="text-red-600 hover:text-red-800"
+                >
+                  <X size={20} />
+                </button>
+              </div>
+            </div>
+          )}
+
+          {isUploading && (
+            <div className="space-y-2">
+              <div className="flex justify-between text-sm">
+                <span>Uploading...</span>
+                <span>{Math.round(uploadProgress)}%</span>
+              </div>
+              <div className="w-full bg-gray-200 rounded-full h-2">
+                <div 
+                  className="bg-blue-600 h-2 rounded-full transition-all duration-300"
+                  style={{ width: `${uploadProgress}%` }}
+                ></div>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Organization Details */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">Facility</label>
+          <select
+            value={formData.facility}
+            onChange={(e) => setFormData(prev => ({ ...prev, facility: e.target.value }))}
+            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+          >
+            <option value="">Select facility</option>
+            {facilities.map(facility => (
+              <option key={facility} value={facility}>{facility}</option>
+            ))}
+          </select>
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">Department</label>
+          <select
+            value={formData.department}
+            onChange={(e) => setFormData(prev => ({ ...prev, department: e.target.value }))}
+            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+          >
+            <option value="">Select department</option>
+            {departments.map(department => (
+              <option key={department} value={department}>{department}</option>
+            ))}
+          </select>
+        </div>
+      </div>
+
+      {/* Approval and Review */}
+      <div className="bg-yellow-50 p-4 rounded-lg">
+        <h3 className="font-medium text-yellow-800 mb-3">Approval & Review</h3>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Designated Approver</label>
+            <select
+              value={formData.approver}
+              onChange={(e) => setFormData(prev => ({ ...prev, approver: e.target.value }))}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-500 focus:border-transparent"
+            >
+              <option value="">Select approver</option>
+              {approvers.map(approver => (
+                <option key={approver} value={approver}>{approver}</option>
+              ))}
+            </select>
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Next Review Date</label>
+            <input
+              type="date"
+              value={formData.reviewDate}
+              onChange={(e) => setFormData(prev => ({ ...prev, reviewDate: e.target.value }))}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-500 focus:border-transparent"
+            />
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+          <div>
+            <label className="flex items-center">
+              <input
+                type="checkbox"
+                checked={formData.approvalRequired}
+                onChange={(e) => setFormData(prev => ({ ...prev, approvalRequired: e.target.checked }))}
+                className="w-4 h-4 text-yellow-600 bg-gray-100 border-gray-300 rounded focus:ring-yellow-500"
+              />
+              <span className="ml-2 text-sm text-gray-700">Requires formal approval</span>
+            </label>
+          </div>
+          <div>
+            <label className="flex items-center">
+              <input
+                type="checkbox"
+                checked={formData.notifyTeam}
+                onChange={(e) => setFormData(prev => ({ ...prev, notifyTeam: e.target.checked }))}
+                className="w-4 h-4 text-yellow-600 bg-gray-100 border-gray-300 rounded focus:ring-yellow-500"
+              />
+              <span className="ml-2 text-sm text-gray-700">Notify team members</span>
+            </label>
+          </div>
+        </div>
+      </div>
+
+      {/* Keywords and Classification */}
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-2">Keywords (comma-separated)</label>
+        <input
+          type="text"
+          value={formData.keywords}
+          onChange={(e) => setFormData(prev => ({ ...prev, keywords: e.target.value }))}
+          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+          placeholder="e.g., quality, patient safety, procedure, training"
+        />
+      </div>
+
+      <div className="flex justify-end space-x-3 pt-6 border-t">
+        <button
+          type="button"
+          onClick={onClose}
+          disabled={isUploading}
+          className="px-4 py-2 text-gray-700 bg-gray-200 rounded-lg hover:bg-gray-300 transition-colors disabled:opacity-50"
+        >
+          Cancel
+        </button>
+        <button
+          type="submit"
+          disabled={isUploading || !uploadedFile}
+          className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50"
+        >
+          {isUploading ? 'Uploading...' : 'Upload Document'}
+        </button>
+      </div>
+    </form>
+  );
+};
+
+// Bulk Export Documents Form
+const BulkExportDocumentsForm = ({ onClose }) => {
+  const [formData, setFormData] = useState({
+    exportType: 'selected',
+    selectedDocuments: [],
+    categories: [],
+    dateRange: 'all',
+    startDate: '',
+    endDate: '',
+    format: 'zip',
+    includeMetadata: true,
+    includeVersionHistory: false,
+    compressionLevel: 'standard',
+    password: '',
+    emailRecipients: '',
+    includeApprovals: true
+  });
+
+  const [exportProgress, setExportProgress] = useState(0);
+  const [isExporting, setIsExporting] = useState(false);
+
+  // Sample documents for selection
+  const availableDocuments = [
+    { id: 1, name: 'Quality Manual v3.2', category: 'Quality Manual', size: '2.4 MB' },
+    { id: 2, name: 'Patient Care SOP', category: 'SOP', size: '1.8 MB' },
+    { id: 3, name: 'Equipment Calibration Procedure', category: 'SOP', size: '956 KB' },
+    { id: 4, name: 'Internal Audit Report Q2-2024', category: 'Reports', size: '3.2 MB' },
+    { id: 5, name: 'Risk Management Policy', category: 'Policy', size: '1.2 MB' },
+    { id: 6, name: 'CAPA Tracking Template', category: 'Template', size: '245 KB' }
+  ];
+
+  const categories = ['Quality Manual', 'SOP', 'Policy', 'Reports', 'Template'];
+
+  const handleDocumentSelection = (docId) => {
+    setFormData(prev => ({
+      ...prev,
+      selectedDocuments: prev.selectedDocuments.includes(docId)
+        ? prev.selectedDocuments.filter(id => id !== docId)
+        : [...prev.selectedDocuments, docId]
+    }));
+  };
+
+  const handleCategorySelection = (category) => {
+    setFormData(prev => ({
+      ...prev,
+      categories: prev.categories.includes(category)
+        ? prev.categories.filter(cat => cat !== category)
+        : [...prev.categories, category]
+    }));
+  };
+
+  const handleSelectAll = () => {
+    setFormData(prev => ({
+      ...prev,
+      selectedDocuments: prev.selectedDocuments.length === availableDocuments.length 
+        ? [] 
+        : availableDocuments.map(doc => doc.id)
+    }));
+  };
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    
+    if (formData.exportType === 'selected' && formData.selectedDocuments.length === 0) {
+      alert('Please select at least one document to export');
+      return;
+    }
+
+    setIsExporting(true);
+    setExportProgress(0);
+
+    // Simulate export progress
+    const progressInterval = setInterval(() => {
+      setExportProgress(prev => {
+        if (prev >= 100) {
+          clearInterval(progressInterval);
+          setIsExporting(false);
+          
+          // Calculate total size
+          let totalDocuments = 0;
+          if (formData.exportType === 'selected') {
+            totalDocuments = formData.selectedDocuments.length;
+          } else if (formData.exportType === 'category') {
+            totalDocuments = availableDocuments.filter(doc => 
+              formData.categories.includes(doc.category)
+            ).length;
+          } else {
+            totalDocuments = availableDocuments.length;
+          }
+
+          const fileName = `QMS_Documents_Export_${new Date().toISOString().split('T')[0]}.${formData.format}`;
+          
+          setTimeout(() => {
+            // Simulate file download
+            alert(`Export completed successfully!\n\nFile: ${fileName}\nDocuments exported: ${totalDocuments}\n\nThe file has been downloaded to your device.`);
+            onClose();
+          }, 500);
+          
+          return 100;
+        }
+        return prev + Math.random() * 12;
+      });
+    }, 300);
+  };
+
+  return (
+    <form onSubmit={handleSubmit} className="space-y-6">
+      {/* Export Type Selection */}
+      <div className="bg-blue-50 p-4 rounded-lg">
+        <h3 className="font-medium text-blue-800 mb-3">Export Selection</h3>
+        <div className="space-y-3">
+          <label className="flex items-center">
+            <input
+              type="radio"
+              name="exportType"
+              value="selected"
+              checked={formData.exportType === 'selected'}
+              onChange={(e) => setFormData(prev => ({ ...prev, exportType: e.target.value }))}
+              className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 focus:ring-blue-500"
+            />
+            <span className="ml-2 text-sm text-gray-700">Export selected documents</span>
+          </label>
+          <label className="flex items-center">
+            <input
+              type="radio"
+              name="exportType"
+              value="category"
+              checked={formData.exportType === 'category'}
+              onChange={(e) => setFormData(prev => ({ ...prev, exportType: e.target.value }))}
+              className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 focus:ring-blue-500"
+            />
+            <span className="ml-2 text-sm text-gray-700">Export by category</span>
+          </label>
+          <label className="flex items-center">
+            <input
+              type="radio"
+              name="exportType"
+              value="all"
+              checked={formData.exportType === 'all'}
+              onChange={(e) => setFormData(prev => ({ ...prev, exportType: e.target.value }))}
+              className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 focus:ring-blue-500"
+            />
+            <span className="ml-2 text-sm text-gray-700">Export all documents</span>
+          </label>
+        </div>
+      </div>
+
+      {/* Document Selection */}
+      {formData.exportType === 'selected' && (
+        <div className="bg-gray-50 p-4 rounded-lg">
+          <div className="flex justify-between items-center mb-3">
+            <h3 className="font-medium text-gray-800">Select Documents</h3>
+            <button
+              type="button"
+              onClick={handleSelectAll}
+              className="text-blue-600 hover:text-blue-800 text-sm font-medium"
+            >
+              {formData.selectedDocuments.length === availableDocuments.length ? 'Deselect All' : 'Select All'}
+            </button>
+          </div>
+          <div className="space-y-2 max-h-60 overflow-y-auto">
+            {availableDocuments.map(doc => (
+              <label key={doc.id} className="flex items-center p-3 bg-white rounded-lg border hover:bg-gray-50">
+                <input
+                  type="checkbox"
+                  checked={formData.selectedDocuments.includes(doc.id)}
+                  onChange={() => handleDocumentSelection(doc.id)}
+                  className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500"
+                />
+                <div className="ml-3 flex-1">
+                  <p className="font-medium text-gray-900">{doc.name}</p>
+                  <p className="text-sm text-gray-500">{doc.category} • {doc.size}</p>
+                </div>
+              </label>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Category Selection */}
+      {formData.exportType === 'category' && (
+        <div className="bg-gray-50 p-4 rounded-lg">
+          <h3 className="font-medium text-gray-800 mb-3">Select Categories</h3>
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+            {categories.map(category => (
+              <label key={category} className="flex items-center">
+                <input
+                  type="checkbox"
+                  checked={formData.categories.includes(category)}
+                  onChange={() => handleCategorySelection(category)}
+                  className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500"
+                />
+                <span className="ml-2 text-sm text-gray-700">{category}</span>
+              </label>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Date Range Filter */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">Date Range</label>
+          <select
+            value={formData.dateRange}
+            onChange={(e) => setFormData(prev => ({ ...prev, dateRange: e.target.value }))}
+            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+          >
+            <option value="all">All Time</option>
+            <option value="lastWeek">Last 7 days</option>
+            <option value="lastMonth">Last 30 days</option>
+            <option value="lastQuarter">Last Quarter</option>
+            <option value="lastYear">Last Year</option>
+            <option value="custom">Custom Range</option>
+          </select>
+        </div>
+        {formData.dateRange === 'custom' && (
+          <>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Start Date</label>
+              <input
+                type="date"
+                value={formData.startDate}
+                onChange={(e) => setFormData(prev => ({ ...prev, startDate: e.target.value }))}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">End Date</label>
+              <input
+                type="date"
+                value={formData.endDate}
+                onChange={(e) => setFormData(prev => ({ ...prev, endDate: e.target.value }))}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              />
+            </div>
+          </>
+        )}
+      </div>
+
+      {/* Export Options */}
+      <div className="bg-green-50 p-4 rounded-lg">
+        <h3 className="font-medium text-green-800 mb-3">Export Options</h3>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Export Format</label>
+            <select
+              value={formData.format}
+              onChange={(e) => setFormData(prev => ({ ...prev, format: e.target.value }))}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+            >
+              <option value="zip">ZIP Archive</option>
+              <option value="7z">7Z Archive (High Compression)</option>
+              <option value="tar">TAR Archive</option>
+            </select>
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Compression Level</label>
+            <select
+              value={formData.compressionLevel}
+              onChange={(e) => setFormData(prev => ({ ...prev, compressionLevel: e.target.value }))}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+            >
+              <option value="none">No Compression</option>
+              <option value="standard">Standard</option>
+              <option value="high">High Compression</option>
+            </select>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+          <div>
+            <label className="flex items-center">
+              <input
+                type="checkbox"
+                checked={formData.includeMetadata}
+                onChange={(e) => setFormData(prev => ({ ...prev, includeMetadata: e.target.checked }))}
+                className="w-4 h-4 text-green-600 bg-gray-100 border-gray-300 rounded focus:ring-green-500"
+              />
+              <span className="ml-2 text-sm text-gray-700">Include metadata (authors, dates, etc.)</span>
+            </label>
+          </div>
+          <div>
+            <label className="flex items-center">
+              <input
+                type="checkbox"
+                checked={formData.includeVersionHistory}
+                onChange={(e) => setFormData(prev => ({ ...prev, includeVersionHistory: e.target.checked }))}
+                className="w-4 h-4 text-green-600 bg-gray-100 border-gray-300 rounded focus:ring-green-500"
+              />
+              <span className="ml-2 text-sm text-gray-700">Include version history</span>
+            </label>
+          </div>
+        </div>
+
+        <div className="mt-4">
+          <label className="flex items-center">
+            <input
+              type="checkbox"
+              checked={formData.includeApprovals}
+              onChange={(e) => setFormData(prev => ({ ...prev, includeApprovals: e.target.checked }))}
+              className="w-4 h-4 text-green-600 bg-gray-100 border-gray-300 rounded focus:ring-green-500"
+            />
+            <span className="ml-2 text-sm text-gray-700">Include approval records and signatures</span>
+          </label>
+        </div>
+      </div>
+
+      {/* Security Options */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">Archive Password (Optional)</label>
+          <input
+            type="password"
+            value={formData.password}
+            onChange={(e) => setFormData(prev => ({ ...prev, password: e.target.value }))}
+            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            placeholder="Leave blank for no password"
+          />
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">Email Recipients (Optional)</label>
+          <input
+            type="text"
+            value={formData.emailRecipients}
+            onChange={(e) => setFormData(prev => ({ ...prev, emailRecipients: e.target.value }))}
+            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            placeholder="Comma-separated email addresses"
+          />
+        </div>
+      </div>
+
+      {/* Export Progress */}
+      {isExporting && (
+        <div className="bg-blue-50 p-4 rounded-lg">
+          <div className="flex justify-between text-sm mb-2">
+            <span>Exporting documents...</span>
+            <span>{Math.round(exportProgress)}%</span>
+          </div>
+          <div className="w-full bg-blue-200 rounded-full h-3">
+            <div 
+              className="bg-blue-600 h-3 rounded-full transition-all duration-300"
+              style={{ width: `${exportProgress}%` }}
+            ></div>
+          </div>
+        </div>
+      )}
+
+      <div className="flex justify-end space-x-3 pt-6 border-t">
+        <button
+          type="button"
+          onClick={onClose}
+          disabled={isExporting}
+          className="px-4 py-2 text-gray-700 bg-gray-200 rounded-lg hover:bg-gray-300 transition-colors disabled:opacity-50"
+        >
+          Cancel
+        </button>
+        <button
+          type="submit"
+          disabled={isExporting}
+          className="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50"
+        >
+          {isExporting ? 'Exporting...' : 'Start Export'}
+        </button>
+      </div>
+    </form>
+  );
+};
+
+// View Document Modal
+const ViewDocumentModal = ({ document, onClose }) => {
+  const [viewMode, setViewMode] = useState('preview');
+  const [isDownloading, setIsDownloading] = useState(false);
+
+  const handleDownload = () => {
+    setIsDownloading(true);
+    
+    // Simulate download process
+    setTimeout(() => {
+      // Create a blob URL for download simulation
+      const blob = new Blob(['Sample document content'], { type: 'application/pdf' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `${document.name}.${document.type.toLowerCase()}`;
+      link.click();
+      URL.revokeObjectURL(url);
+      
+      setIsDownloading(false);
+      alert(`Document "${document.name}" has been downloaded successfully!`);
+    }, 1500);
+  };
+
+  const handlePrint = () => {
+    window.print();
+  };
+
+  const getFileIcon = (type) => {
+    switch (type.toLowerCase()) {
+      case 'pdf': return '📄';
+      case 'word': return '📝';
+      case 'excel': return '📊';
+      default: return '📄';
+    }
+  };
+
+  const getStatusColor = (status) => {
+    switch (status) {
+      case 'Current': return 'bg-green-100 text-green-800';
+      case 'Under Review': return 'bg-yellow-100 text-yellow-800';
+      case 'Final': return 'bg-blue-100 text-blue-800';
+      default: return 'bg-gray-100 text-gray-800';
+    }
+  };
+
+  return (
+    <div className="space-y-6">
+      {/* Document Header */}
+      <div className="flex items-start justify-between">
+        <div className="flex items-start space-x-4">
+          <div className="text-4xl">{getFileIcon(document.type)}</div>
+          <div>
+            <h2 className="text-xl font-bold text-gray-900">{document.name}</h2>
+            <p className="text-gray-600">{document.description}</p>
+            <div className="flex items-center space-x-4 mt-2">
+              <span className={clsx("px-2 py-1 rounded-full text-xs font-medium", getStatusColor(document.status))}>
+                {document.status}
+              </span>
+              <span className="text-sm text-gray-500">Version {document.version}</span>
+              <span className="text-sm text-gray-500">{document.size}</span>
+            </div>
+          </div>
+        </div>
+        <div className="flex space-x-2">
+          <button
+            onClick={handleDownload}
+            disabled={isDownloading}
+            className="bg-blue-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-blue-700 transition-colors disabled:opacity-50"
+          >
+            {isDownloading ? (
+              <>
+                <div className="animate-spin w-4 h-4 border-2 border-white border-t-transparent rounded-full inline-block mr-2"></div>
+                Downloading...
+              </>
+            ) : (
+              <>
+                <Download size={16} className="inline mr-2" />
+                Download
+              </>
+            )}
+          </button>
+          <button
+            onClick={handlePrint}
+            className="bg-gray-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-gray-700 transition-colors"
+          >
+            <Eye size={16} className="inline mr-2" />
+            Print
+          </button>
+        </div>
+      </div>
+
+      {/* Document Metadata */}
+      <div className="bg-gray-50 p-4 rounded-lg">
+        <h3 className="font-semibold text-gray-900 mb-3">Document Details</h3>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div>
+            <p className="text-sm text-gray-500">Category</p>
+            <p className="font-medium">{document.category}</p>
+          </div>
+          <div>
+            <p className="text-sm text-gray-500">Author</p>
+            <p className="font-medium">{document.author}</p>
+          </div>
+          <div>
+            <p className="text-sm text-gray-500">Approver</p>
+            <p className="font-medium">{document.approver}</p>
+          </div>
+          <div>
+            <p className="text-sm text-gray-500">Last Modified</p>
+            <p className="font-medium">{document.lastModified}</p>
+          </div>
+          <div>
+            <p className="text-sm text-gray-500">Next Review</p>
+            <p className="font-medium">{document.nextReview}</p>
+          </div>
+          <div>
+            <p className="text-sm text-gray-500">File Type</p>
+            <p className="font-medium">{document.type}</p>
+          </div>
+        </div>
+      </div>
+
+      {/* View Mode Selector */}
+      <div className="flex space-x-4 border-b border-gray-200">
+        <button
+          onClick={() => setViewMode('preview')}
+          className={clsx(
+            "pb-2 px-1 border-b-2 font-medium text-sm transition-colors",
+            viewMode === 'preview'
+              ? "border-blue-500 text-blue-600"
+              : "border-transparent text-gray-500 hover:text-gray-700"
+          )}
+        >
+          Preview
+        </button>
+        <button
+          onClick={() => setViewMode('details')}
+          className={clsx(
+            "pb-2 px-1 border-b-2 font-medium text-sm transition-colors",
+            viewMode === 'details'
+              ? "border-blue-500 text-blue-600"
+              : "border-transparent text-gray-500 hover:text-gray-700"
+          )}
+        >
+          Details
+        </button>
+        <button
+          onClick={() => setViewMode('history')}
+          className={clsx(
+            "pb-2 px-1 border-b-2 font-medium text-sm transition-colors",
+            viewMode === 'history'
+              ? "border-blue-500 text-blue-600"
+              : "border-transparent text-gray-500 hover:text-gray-700"
+          )}
+        >
+          Version History
+        </button>
+      </div>
+
+      {/* Content Area */}
+      <div className="min-h-96">
+        {viewMode === 'preview' && (
+          <div className="bg-white border-2 border-gray-200 rounded-lg p-8 text-center">
+            <div className="text-6xl mb-4">{getFileIcon(document.type)}</div>
+            <h3 className="text-lg font-semibold text-gray-900 mb-2">Document Preview</h3>
+            <p className="text-gray-600 mb-4">
+              This is a preview of {document.name}. The actual document content would be displayed here 
+              in a real implementation using appropriate viewers for different file types.
+            </p>
+            <div className="bg-gray-100 p-6 rounded-lg text-left">
+              <h4 className="font-semibold mb-2">Sample Content Preview:</h4>
+              <p className="text-sm text-gray-700 leading-relaxed">
+                This document outlines the standard operating procedures for {document.category.toLowerCase()} 
+                within our healthcare quality management system. It includes detailed guidelines, 
+                responsibilities, and compliance requirements in accordance with ISO 9001:2015 standards.
+              </p>
+              <div className="mt-4 p-3 bg-blue-50 rounded border-l-4 border-blue-400">
+                <p className="text-sm text-blue-800">
+                  <strong>Note:</strong> This is a simulated preview. In a real implementation, 
+                  the actual document content would be rendered here using appropriate file viewers.
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {viewMode === 'details' && (
+          <div className="space-y-6">
+            <div className="bg-white border border-gray-200 rounded-lg p-6">
+              <h3 className="font-semibold text-gray-900 mb-4">Document Properties</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="space-y-3">
+                  <div>
+                    <p className="text-sm font-medium text-gray-500">File Size</p>
+                    <p className="text-gray-900">{document.size}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-gray-500">Creation Date</p>
+                    <p className="text-gray-900">2024-05-15</p>
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-gray-500">Last Access</p>
+                    <p className="text-gray-900">2024-06-20 14:30</p>
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-gray-500">Download Count</p>
+                    <p className="text-gray-900">42 times</p>
+                  </div>
+                </div>
+                <div className="space-y-3">
+                  <div>
+                    <p className="text-sm font-medium text-gray-500">Keywords</p>
+                    <div className="flex flex-wrap gap-2 mt-1">
+                      {['quality', 'procedure', 'healthcare', 'compliance'].map(keyword => (
+                        <span key={keyword} className="px-2 py-1 bg-blue-100 text-blue-800 rounded-full text-xs">
+                          {keyword}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-gray-500">Document ID</p>
+                    <p className="text-gray-900 font-mono">DOC-2024-{document.id.toString().padStart(3, '0')}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-gray-500">Checksum (MD5)</p>
+                    <p className="text-gray-900 font-mono text-xs">a1b2c3d4e5f6...</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="bg-white border border-gray-200 rounded-lg p-6">
+              <h3 className="font-semibold text-gray-900 mb-4">Permissions & Access</h3>
+              <div className="space-y-3">
+                <div className="flex justify-between items-center py-2 border-b border-gray-100">
+                  <span className="text-sm text-gray-600">Quality Team</span>
+                  <span className="text-sm font-medium text-green-600">Full Access</span>
+                </div>
+                <div className="flex justify-between items-center py-2 border-b border-gray-100">
+                  <span className="text-sm text-gray-600">Clinical Staff</span>
+                  <span className="text-sm font-medium text-blue-600">Read Only</span>
+                </div>
+                <div className="flex justify-between items-center py-2 border-b border-gray-100">
+                  <span className="text-sm text-gray-600">Auditors</span>
+                  <span className="text-sm font-medium text-blue-600">Read Only</span>
+                </div>
+                <div className="flex justify-between items-center py-2">
+                  <span className="text-sm text-gray-600">External Users</span>
+                  <span className="text-sm font-medium text-red-600">No Access</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {viewMode === 'history' && (
+          <div className="bg-white border border-gray-200 rounded-lg p-6">
+            <h3 className="font-semibold text-gray-900 mb-4">Version History</h3>
+            <div className="space-y-4">
+              {[
+                { version: '3.2', date: '2024-06-15', author: 'Quality Manager', changes: 'Updated compliance procedures and added new risk assessment guidelines' },
+                { version: '3.1', date: '2024-05-20', author: 'Quality Manager', changes: 'Minor corrections to formatting and updated contact information' },
+                { version: '3.0', date: '2024-04-10', author: 'Quality Director', changes: 'Major revision including new ISO 9001:2015 requirements' },
+                { version: '2.5', date: '2024-03-01', author: 'Quality Manager', changes: 'Added section on patient safety protocols' }
+              ].map((version, index) => (
+                <div key={version.version} className="border border-gray-200 rounded-lg p-4">
+                  <div className="flex items-center justify-between mb-2">
+                    <div className="flex items-center space-x-3">
+                      <span className={clsx(
+                        "px-2 py-1 rounded-full text-xs font-medium",
+                        index === 0 ? "bg-green-100 text-green-800" : "bg-gray-100 text-gray-600"
+                      )}>
+                        v{version.version} {index === 0 && '(Current)'}
+                      </span>
+                      <span className="text-sm text-gray-600">{version.date}</span>
+                      <span className="text-sm text-gray-600">by {version.author}</span>
+                    </div>
+                    <div className="flex space-x-2">
+                      <button className="text-blue-600 hover:text-blue-800 text-sm">View</button>
+                      {index > 0 && (
+                        <button className="text-gray-600 hover:text-gray-800 text-sm">Download</button>
+                      )}
+                    </div>
+                  </div>
+                  <p className="text-sm text-gray-700">{version.changes}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
+
+      <div className="flex justify-end space-x-3 pt-6 border-t">
+        <button
+          onClick={onClose}
+          className="px-4 py-2 text-gray-700 bg-gray-200 rounded-lg hover:bg-gray-300 transition-colors"
+        >
+          Close
+        </button>
+      </div>
+    </div>
+  );
+};
+
 // Sample Data
 const dashboardData = {
   kpis: {
