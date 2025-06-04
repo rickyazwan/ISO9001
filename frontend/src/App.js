@@ -1621,6 +1621,9 @@ const ReportIncidentForm = ({ onClose }) => {
     </form>
   );
 };
+
+// Generate Report Form
+const GenerateReportForm = ({ onClose }) => {
   const [formData, setFormData] = useState({
     reportType: 'compliance',
     title: '',
