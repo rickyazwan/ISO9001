@@ -1884,40 +1884,978 @@ const ReportsAnalytics = () => {
   );
 };
 
-// Placeholder Components for remaining modules
-const PlaceholderComponent = ({ title, description, features }) => (
-  <div className="space-y-6">
-    <div>
-      <h1 className="text-2xl font-bold text-gray-900">{title}</h1>
-      <p className="text-gray-600">{description}</p>
+// Calendar & Scheduling Component
+const CalendarScheduling = () => {
+  const { openModal } = useModal();
+  const [currentDate, setCurrentDate] = useState(new Date());
+  const [viewMode, setViewMode] = useState('month');
+  const [selectedEvent, setSelectedEvent] = useState(null);
+
+  const events = [
+    {
+      id: 1,
+      title: 'Internal Audit - General Hospital',
+      type: 'audit',
+      date: '2024-06-18',
+      time: '09:00',
+      duration: '4 hours',
+      auditor: 'Dr. Smith',
+      facility: 'General Hospital',
+      status: 'scheduled',
+      priority: 'high'
+    },
+    {
+      id: 2,
+      title: 'CAPA Review Meeting',
+      type: 'meeting',
+      date: '2024-06-19',
+      time: '14:00',
+      duration: '2 hours',
+      attendees: ['Quality Team', 'Management'],
+      facility: 'Head Office',
+      status: 'confirmed',
+      priority: 'medium'
+    },
+    {
+      id: 3,
+      title: 'Safety Training Session',
+      type: 'training',
+      date: '2024-06-20',
+      time: '10:00',
+      duration: '3 hours',
+      trainer: 'Safety Officer',
+      facility: 'Emergency Center',
+      status: 'scheduled',
+      priority: 'medium'
+    },
+    {
+      id: 4,
+      title: 'External Audit - Pediatric Ward',
+      type: 'audit',
+      date: '2024-06-22',
+      time: '08:30',
+      duration: '6 hours',
+      auditor: 'External Auditor',
+      facility: 'Pediatric Ward',
+      status: 'confirmed',
+      priority: 'critical'
+    },
+    {
+      id: 5,
+      title: 'Document Review',
+      type: 'review',
+      date: '2024-06-25',
+      time: '15:00',
+      duration: '1.5 hours',
+      reviewer: 'Quality Manager',
+      facility: 'Head Office',
+      status: 'pending',
+      priority: 'low'
+    }
+  ];
+
+  const upcomingEvents = events.filter(event => new Date(event.date) >= new Date()).slice(0, 5);
+
+  const getEventColor = (type) => {
+    switch (type) {
+      case 'audit': return '#ef4444';
+      case 'meeting': return '#3b82f6';
+      case 'training': return '#10b981';
+      case 'review': return '#8b5cf6';
+      default: return '#6b7280';
+    }
+  };
+
+  const EventCard = ({ event, isCompact = false }) => (
+    <div 
+      className={clsx(
+        "rounded-lg border-l-4 p-3 cursor-pointer hover:shadow-md transition-shadow",
+        isCompact ? "bg-white" : "bg-gray-50"
+      )}
+      style={{ borderLeftColor: getEventColor(event.type) }}
+      onClick={() => setSelectedEvent(event)}
+    >
+      <div className="flex justify-between items-start mb-2">
+        <h4 className="font-medium text-gray-900 text-sm">{event.title}</h4>
+        <span className={clsx(
+          "px-2 py-1 rounded-full text-xs font-medium",
+          event.priority === 'critical' ? 'bg-red-100 text-red-800' :
+          event.priority === 'high' ? 'bg-orange-100 text-orange-800' :
+          event.priority === 'medium' ? 'bg-yellow-100 text-yellow-800' :
+          'bg-green-100 text-green-800'
+        )}>
+          {event.priority}
+        </span>
+      </div>
+      <div className="text-xs text-gray-600 space-y-1">
+        <p>📅 {event.date} at {event.time}</p>
+        <p>⏱️ Duration: {event.duration}</p>
+        <p>🏢 {event.facility}</p>
+        {event.auditor && <p>👤 {event.auditor}</p>}
+        {event.trainer && <p>👤 {event.trainer}</p>}
+      </div>
+      <div className="mt-2">
+        <span className={clsx(
+          "px-2 py-1 rounded-full text-xs font-medium",
+          event.status === 'confirmed' ? 'bg-green-100 text-green-800' :
+          event.status === 'scheduled' ? 'bg-blue-100 text-blue-800' :
+          'bg-yellow-100 text-yellow-800'
+        )}>
+          {event.status}
+        </span>
+      </div>
     </div>
-    
-    <div className="bg-white rounded-lg shadow-md p-8 text-center">
-      <div className="max-w-md mx-auto">
-        <div className="bg-blue-50 rounded-full p-4 w-16 h-16 mx-auto mb-4">
-          <FileText size={32} className="text-blue-600 mx-auto" />
+  );
+
+  return (
+    <div className="space-y-6">
+      {/* Header */}
+      <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-bold text-gray-900">Calendar & Scheduling</h1>
+          <p className="text-gray-600">Manage audit schedules, meetings, and quality events</p>
         </div>
-        <h3 className="text-lg font-semibold text-gray-900 mb-2">Module Under Development</h3>
-        <p className="text-gray-600 mb-6">This module is being developed with the following features:</p>
-        
-        <div className="text-left space-y-2">
-          {features.map((feature, index) => (
-            <div key={index} className="flex items-center text-sm text-gray-700">
-              <div className="w-2 h-2 bg-blue-600 rounded-full mr-3"></div>
-              {feature}
+        <div className="flex gap-3">
+          <button 
+            onClick={() => openModal('scheduleEvent', <div>Schedule New Event Form</div>)}
+            className="bg-blue-600 text-white px-6 py-2 rounded-lg font-medium hover:bg-blue-700 transition-colors"
+          >
+            <Plus size={16} className="inline mr-2" />
+            Schedule Event
+          </button>
+          <button className="bg-green-600 text-white px-6 py-2 rounded-lg font-medium hover:bg-green-700 transition-colors">
+            <Download size={16} className="inline mr-2" />
+            Export Calendar
+          </button>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Calendar View */}
+        <div className="lg:col-span-2 bg-white rounded-lg shadow-md p-6">
+          <div className="flex justify-between items-center mb-6">
+            <h3 className="text-lg font-semibold">June 2024</h3>
+            <div className="flex gap-2">
+              <button 
+                onClick={() => setViewMode('month')}
+                className={clsx(
+                  "px-3 py-1 rounded text-sm font-medium transition-colors",
+                  viewMode === 'month' ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                )}
+              >
+                Month
+              </button>
+              <button 
+                onClick={() => setViewMode('week')}
+                className={clsx(
+                  "px-3 py-1 rounded text-sm font-medium transition-colors",
+                  viewMode === 'week' ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                )}
+              >
+                Week
+              </button>
             </div>
-          ))}
+          </div>
+
+          {/* Mini Calendar Grid */}
+          <div className="grid grid-cols-7 gap-1 mb-4">
+            {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(day => (
+              <div key={day} className="text-center text-sm font-medium text-gray-500 py-2">
+                {day}
+              </div>
+            ))}
+            {Array.from({ length: 35 }, (_, i) => {
+              const dayNumber = i - 2; // Starting from day -2 to show previous month days
+              const isCurrentMonth = dayNumber > 0 && dayNumber <= 30;
+              const hasEvent = isCurrentMonth && events.some(event => parseInt(event.date.split('-')[2]) === dayNumber);
+              
+              return (
+                <div
+                  key={i}
+                  className={clsx(
+                    "text-center py-2 text-sm cursor-pointer rounded hover:bg-blue-50",
+                    isCurrentMonth ? "text-gray-900" : "text-gray-300",
+                    hasEvent && "bg-blue-100 font-medium",
+                    dayNumber === 18 && "bg-blue-600 text-white" // Today
+                  )}
+                >
+                  {isCurrentMonth ? dayNumber : dayNumber <= 0 ? 30 + dayNumber : dayNumber - 30}
+                </div>
+              );
+            })}
+          </div>
+
+          {/* Event Legend */}
+          <div className="border-t pt-4">
+            <h4 className="text-sm font-medium text-gray-700 mb-3">Event Types</h4>
+            <div className="flex flex-wrap gap-4 text-xs">
+              <div className="flex items-center gap-2">
+                <div className="w-3 h-3 bg-red-500 rounded"></div>
+                <span>Audits</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="w-3 h-3 bg-blue-500 rounded"></div>
+                <span>Meetings</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="w-3 h-3 bg-green-500 rounded"></div>
+                <span>Training</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="w-3 h-3 bg-purple-500 rounded"></div>
+                <span>Reviews</span>
+              </div>
+            </div>
+          </div>
         </div>
-        
-        <div className="mt-6 pt-6 border-t border-gray-200">
-          <p className="text-sm text-gray-500">
-            This module will be fully functional in the next update
-          </p>
+
+        {/* Upcoming Events Sidebar */}
+        <div className="space-y-6">
+          {/* Upcoming Events */}
+          <div className="bg-white rounded-lg shadow-md p-6">
+            <h3 className="text-lg font-semibold mb-4">Upcoming Events</h3>
+            <div className="space-y-3">
+              {upcomingEvents.map(event => (
+                <EventCard key={event.id} event={event} isCompact />
+              ))}
+            </div>
+          </div>
+
+          {/* Quick Stats */}
+          <div className="bg-white rounded-lg shadow-md p-6">
+            <h3 className="text-lg font-semibold mb-4">This Month</h3>
+            <div className="space-y-3">
+              <div className="flex justify-between items-center">
+                <span className="text-sm text-gray-600">Total Events</span>
+                <span className="font-medium">{events.length}</span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-sm text-gray-600">Audits Scheduled</span>
+                <span className="font-medium">{events.filter(e => e.type === 'audit').length}</span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-sm text-gray-600">Pending Confirmation</span>
+                <span className="font-medium text-yellow-600">{events.filter(e => e.status === 'pending').length}</span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-sm text-gray-600">Confirmed Events</span>
+                <span className="font-medium text-green-600">{events.filter(e => e.status === 'confirmed').length}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Resource Allocation */}
+      <div className="bg-white rounded-lg shadow-md p-6">
+        <h3 className="text-lg font-semibold mb-4">Resource Allocation</h3>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="text-center p-4 bg-blue-50 rounded-lg">
+            <div className="text-2xl font-bold text-blue-600">8</div>
+            <div className="text-sm text-gray-600">Auditors Available</div>
+          </div>
+          <div className="text-center p-4 bg-green-50 rounded-lg">
+            <div className="text-2xl font-bold text-green-600">24</div>
+            <div className="text-sm text-gray-600">Facilities Covered</div>
+          </div>
+          <div className="text-center p-4 bg-orange-50 rounded-lg">
+            <div className="text-2xl font-bold text-orange-600">92%</div>
+            <div className="text-sm text-gray-600">Capacity Utilization</div>
+          </div>
         </div>
       </div>
     </div>
-  </div>
-);
+  );
+};
+
+// ISO 9001 Reference Guide Component
+const ISO9001ReferenceGuide = () => {
+  const [searchTerm, setSearchTerm] = useState('');
+  const [selectedClause, setSelectedClause] = useState(null);
+  const [activeTab, setActiveTab] = useState('clauses');
+
+  const iso9001Clauses = [
+    {
+      number: '4.1',
+      title: 'Understanding the organization and its context',
+      description: 'The organization shall determine external and internal issues that are relevant to its purpose and strategic direction.',
+      healthcareExample: 'Healthcare organizations must consider regulatory requirements, patient demographics, technology changes, and competitive landscape.',
+      auditQuestions: [
+        'How does the organization identify internal and external issues?',
+        'What process is used to monitor and review these issues?',
+        'How do these issues influence the QMS design?'
+      ],
+      commonNCRs: [
+        'Lack of documented process for identifying context',
+        'No evidence of regular review of external/internal issues',
+        'Context not linked to QMS scope and objectives'
+      ]
+    },
+    {
+      number: '4.2',
+      title: 'Understanding the needs and expectations of interested parties',
+      description: 'The organization shall determine the interested parties that are relevant to the quality management system.',
+      healthcareExample: 'Interested parties include patients, families, regulatory bodies, staff, suppliers, and community health organizations.',
+      auditQuestions: [
+        'Who are the identified interested parties?',
+        'How are their needs and expectations determined?',
+        'What is the process for monitoring changes in requirements?'
+      ],
+      commonNCRs: [
+        'Incomplete identification of interested parties',
+        'No process to monitor changing requirements',
+        'Stakeholder needs not reflected in QMS'
+      ]
+    },
+    {
+      number: '6.1',
+      title: 'Actions to address risks and opportunities',
+      description: 'When planning for the QMS, the organization shall consider issues and requirements, and determine risks and opportunities.',
+      healthcareExample: 'Healthcare risks include patient safety incidents, regulatory non-compliance, equipment failures, and staff competency gaps.',
+      auditQuestions: [
+        'How does the organization identify risks and opportunities?',
+        'What actions have been planned to address them?',
+        'How is the effectiveness of actions evaluated?'
+      ],
+      commonNCRs: [
+        'Risk assessment not comprehensive',
+        'No clear link between risks and planned actions',
+        'Effectiveness of risk actions not monitored'
+      ]
+    },
+    {
+      number: '7.1.5',
+      title: 'Monitoring and measuring resources',
+      description: 'The organization shall determine and provide the resources needed to ensure valid and reliable results.',
+      healthcareExample: 'Medical equipment calibration, laboratory instrument validation, patient monitoring systems maintenance.',
+      auditQuestions: [
+        'What monitoring and measuring equipment is used?',
+        'How is equipment calibrated and maintained?',
+        'What happens when equipment is found out of calibration?'
+      ],
+      commonNCRs: [
+        'Equipment not properly calibrated',
+        'No traceability to measurement standards',
+        'Inadequate records of calibration activities'
+      ]
+    },
+    {
+      number: '8.2.1',
+      title: 'Customer communication',
+      description: 'Communication with customers shall include providing information relating to products and services.',
+      healthcareExample: 'Patient communication about treatment options, informed consent, discharge instructions, and complaint handling.',
+      auditQuestions: [
+        'How does the organization communicate with patients?',
+        'What information is provided about services?',
+        'How are patient feedback and complaints handled?'
+      ],
+      commonNCRs: [
+        'Inadequate patient information provided',
+        'No formal complaint handling process',
+        'Patient feedback not systematically collected'
+      ]
+    }
+  ];
+
+  const commonNCRs = [
+    {
+      category: 'Document Control',
+      ncrs: [
+        'Documents not controlled or outdated versions in use',
+        'No approval process for document changes',
+        'External documents not identified or controlled'
+      ]
+    },
+    {
+      category: 'Competence',
+      ncrs: [
+        'Staff competence not evaluated or documented',
+        'Training records incomplete or not maintained',
+        'No process for determining training effectiveness'
+      ]
+    },
+    {
+      category: 'Risk Management',
+      ncrs: [
+        'Risk assessment not comprehensive or current',
+        'Risk controls not effectively implemented',
+        'No monitoring of risk control effectiveness'
+      ]
+    },
+    {
+      category: 'Internal Audit',
+      ncrs: [
+        'Audit program not covering all QMS processes',
+        'Auditor independence not maintained',
+        'Audit findings not properly addressed'
+      ]
+    }
+  ];
+
+  const auditChecklists = [
+    {
+      title: 'Patient Care Process Audit',
+      items: [
+        'Are patient care protocols current and accessible?',
+        'Is staff training on protocols documented and current?',
+        'Are patient outcomes monitored and reviewed?',
+        'Is there evidence of continual improvement in care processes?'
+      ]
+    },
+    {
+      title: 'Equipment Management Audit',
+      items: [
+        'Is all medical equipment properly identified and tracked?',
+        'Are calibration and maintenance schedules followed?',
+        'Are equipment failures properly investigated?',
+        'Is there a preventive maintenance program in place?'
+      ]
+    },
+    {
+      title: 'Document and Record Control Audit',
+      items: [
+        'Are all documents current and approved versions?',
+        'Is there a document control procedure in place?',
+        'Are records legible, identifiable, and retained per schedule?',
+        'Is access to documents controlled appropriately?'
+      ]
+    }
+  ];
+
+  const filteredClauses = iso9001Clauses.filter(clause =>
+    clause.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    clause.number.includes(searchTerm) ||
+    clause.description.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
+  return (
+    <div className="space-y-6">
+      {/* Header */}
+      <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-bold text-gray-900">ISO 9001 Reference Guide</h1>
+          <p className="text-gray-600">Comprehensive guide for ISO 9001 implementation in healthcare</p>
+        </div>
+        <div className="flex gap-3">
+          <button className="bg-blue-600 text-white px-6 py-2 rounded-lg font-medium hover:bg-blue-700 transition-colors">
+            <Download size={16} className="inline mr-2" />
+            Download Guide
+          </button>
+          <button className="bg-green-600 text-white px-6 py-2 rounded-lg font-medium hover:bg-green-700 transition-colors">
+            <FileText size={16} className="inline mr-2" />
+            Print Checklist
+          </button>
+        </div>
+      </div>
+
+      {/* Navigation Tabs */}
+      <div className="bg-white rounded-lg shadow-md">
+        <div className="border-b border-gray-200">
+          <nav className="-mb-px flex space-x-8 px-6">
+            {[
+              { id: 'clauses', label: 'ISO 9001 Clauses' },
+              { id: 'ncrs', label: 'Common NCRs' },
+              { id: 'checklists', label: 'Audit Checklists' }
+            ].map((tab) => (
+              <button
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id)}
+                className={clsx(
+                  'py-4 px-1 border-b-2 font-medium text-sm transition-colors',
+                  activeTab === tab.id
+                    ? 'border-blue-500 text-blue-600'
+                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                )}
+              >
+                {tab.label}
+              </button>
+            ))}
+          </nav>
+        </div>
+
+        <div className="p-6">
+          {activeTab === 'clauses' && (
+            <div className="space-y-6">
+              {/* Search */}
+              <div className="relative">
+                <Search size={20} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+                <input
+                  type="text"
+                  placeholder="Search ISO 9001 clauses..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                />
+              </div>
+
+              {/* Clauses List */}
+              <div className="space-y-4">
+                {filteredClauses.map((clause) => (
+                  <div key={clause.number} className="border border-gray-200 rounded-lg">
+                    <div 
+                      className="p-4 cursor-pointer hover:bg-gray-50 transition-colors"
+                      onClick={() => setSelectedClause(selectedClause === clause.number ? null : clause.number)}
+                    >
+                      <div className="flex justify-between items-center">
+                        <div>
+                          <h3 className="font-medium text-gray-900">
+                            {clause.number} - {clause.title}
+                          </h3>
+                          <p className="text-sm text-gray-600 mt-1">{clause.description}</p>
+                        </div>
+                        <div className="text-gray-400">
+                          {selectedClause === clause.number ? '−' : '+'}
+                        </div>
+                      </div>
+                    </div>
+
+                    {selectedClause === clause.number && (
+                      <div className="border-t border-gray-200 p-4 bg-gray-50">
+                        <div className="space-y-4">
+                          {/* Healthcare Example */}
+                          <div>
+                            <h4 className="font-medium text-green-700 mb-2">Healthcare Implementation Example</h4>
+                            <p className="text-sm text-gray-700">{clause.healthcareExample}</p>
+                          </div>
+
+                          {/* Audit Questions */}
+                          <div>
+                            <h4 className="font-medium text-blue-700 mb-2">Key Audit Questions</h4>
+                            <ul className="list-disc list-inside space-y-1 text-sm text-gray-700">
+                              {clause.auditQuestions.map((question, index) => (
+                                <li key={index}>{question}</li>
+                              ))}
+                            </ul>
+                          </div>
+
+                          {/* Common NCRs */}
+                          <div>
+                            <h4 className="font-medium text-red-700 mb-2">Common Non-Conformances</h4>
+                            <ul className="list-disc list-inside space-y-1 text-sm text-gray-700">
+                              {clause.commonNCRs.map((ncr, index) => (
+                                <li key={index}>{ncr}</li>
+                              ))}
+                            </ul>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {activeTab === 'ncrs' && (
+            <div className="space-y-6">
+              <div>
+                <h3 className="text-lg font-semibold mb-4">Common Non-Conformance Reports (NCRs)</h3>
+                <p className="text-gray-600 mb-6">Typical findings during ISO 9001 audits in healthcare organizations</p>
+              </div>
+
+              <div className="space-y-6">
+                {commonNCRs.map((category) => (
+                  <div key={category.category} className="bg-gray-50 rounded-lg p-6">
+                    <h4 className="font-medium text-gray-900 mb-4">{category.category}</h4>
+                    <div className="space-y-3">
+                      {category.ncrs.map((ncr, index) => (
+                        <div key={index} className="flex items-start gap-3 p-3 bg-white rounded border-l-4 border-red-500">
+                          <AlertTriangle size={16} className="text-red-500 mt-0.5 flex-shrink-0" />
+                          <p className="text-sm text-gray-700">{ncr}</p>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {activeTab === 'checklists' && (
+            <div className="space-y-6">
+              <div>
+                <h3 className="text-lg font-semibold mb-4">Healthcare Audit Checklists</h3>
+                <p className="text-gray-600 mb-6">Ready-to-use checklists for conducting ISO 9001 audits in healthcare settings</p>
+              </div>
+
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                {auditChecklists.map((checklist, index) => (
+                  <div key={index} className="bg-white border border-gray-200 rounded-lg p-6">
+                    <h4 className="font-medium text-gray-900 mb-4">{checklist.title}</h4>
+                    <div className="space-y-3">
+                      {checklist.items.map((item, itemIndex) => (
+                        <div key={itemIndex} className="flex items-start gap-3">
+                          <input type="checkbox" className="mt-1 w-4 h-4 text-blue-600 rounded focus:ring-blue-500" />
+                          <label className="text-sm text-gray-700">{item}</label>
+                        </div>
+                      ))}
+                    </div>
+                    <div className="mt-4 pt-4 border-t border-gray-200">
+                      <button className="text-blue-600 hover:text-blue-800 text-sm font-medium">
+                        <Download size={14} className="inline mr-1" />
+                        Download PDF
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// Quality Documents Component
+const QualityDocuments = () => {
+  const { openModal } = useModal();
+  const [searchTerm, setSearchTerm] = useState('');
+  const [filterCategory, setFilterCategory] = useState('all');
+  const [sortBy, setSortBy] = useState('name');
+
+  const documents = [
+    {
+      id: 1,
+      name: 'Quality Manual v3.2',
+      category: 'Quality Manual',
+      type: 'PDF',
+      size: '2.4 MB',
+      lastModified: '2024-06-15',
+      version: '3.2',
+      status: 'Current',
+      author: 'Quality Manager',
+      approver: 'CEO',
+      nextReview: '2024-12-15',
+      description: 'Main quality management system documentation'
+    },
+    {
+      id: 2,
+      name: 'Patient Care SOP',
+      category: 'SOP',
+      type: 'Word',
+      size: '1.8 MB',
+      lastModified: '2024-06-10',
+      version: '2.1',
+      status: 'Current',
+      author: 'Clinical Director',
+      approver: 'Medical Director',
+      nextReview: '2024-09-10',
+      description: 'Standard operating procedures for patient care processes'
+    },
+    {
+      id: 3,
+      name: 'Equipment Calibration Procedure',
+      category: 'SOP',
+      type: 'PDF',
+      size: '956 KB',
+      lastModified: '2024-06-08',
+      version: '1.5',
+      status: 'Under Review',
+      author: 'Biomedical Engineer',
+      approver: 'Quality Manager',
+      nextReview: '2024-07-08',
+      description: 'Procedures for medical equipment calibration and maintenance'
+    },
+    {
+      id: 4,
+      name: 'Internal Audit Report Q2-2024',
+      category: 'Reports',
+      type: 'Excel',
+      size: '3.2 MB',
+      lastModified: '2024-06-12',
+      version: '1.0',
+      status: 'Final',
+      author: 'Lead Auditor',
+      approver: 'Quality Director',
+      nextReview: 'N/A',
+      description: 'Comprehensive internal audit findings and recommendations'
+    },
+    {
+      id: 5,
+      name: 'Risk Management Policy',
+      category: 'Policy',
+      type: 'PDF',
+      size: '1.2 MB',
+      lastModified: '2024-05-20',
+      version: '2.0',
+      status: 'Current',
+      author: 'Risk Manager',
+      approver: 'Board of Directors',
+      nextReview: '2025-05-20',
+      description: 'Organization-wide risk management framework and procedures'
+    },
+    {
+      id: 6,
+      name: 'CAPA Tracking Template',
+      category: 'Template',
+      type: 'Excel',
+      size: '245 KB',
+      lastModified: '2024-06-01',
+      version: '1.3',
+      status: 'Current',
+      author: 'Quality Analyst',
+      approver: 'Quality Manager',
+      nextReview: '2024-12-01',
+      description: 'Template for tracking corrective and preventive actions'
+    }
+  ];
+
+  const documentStats = {
+    total: documents.length,
+    current: documents.filter(d => d.status === 'Current').length,
+    underReview: documents.filter(d => d.status === 'Under Review').length,
+    expiringSoon: documents.filter(d => {
+      if (d.nextReview === 'N/A') return false;
+      const reviewDate = new Date(d.nextReview);
+      const today = new Date();
+      const thirtyDaysFromNow = new Date(today.getTime() + 30 * 24 * 60 * 60 * 1000);
+      return reviewDate <= thirtyDaysFromNow;
+    }).length
+  };
+
+  const filteredDocuments = documents
+    .filter(doc => {
+      const matchesSearch = doc.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                           doc.description.toLowerCase().includes(searchTerm.toLowerCase());
+      const matchesFilter = filterCategory === 'all' || doc.category === filterCategory;
+      return matchesSearch && matchesFilter;
+    })
+    .sort((a, b) => {
+      switch (sortBy) {
+        case 'name': return a.name.localeCompare(b.name);
+        case 'date': return new Date(b.lastModified) - new Date(a.lastModified);
+        case 'version': return b.version.localeCompare(a.version);
+        default: return 0;
+      }
+    });
+
+  const getStatusColor = (status) => {
+    switch (status) {
+      case 'Current': return 'bg-green-100 text-green-800';
+      case 'Under Review': return 'bg-yellow-100 text-yellow-800';
+      case 'Final': return 'bg-blue-100 text-blue-800';
+      case 'Draft': return 'bg-gray-100 text-gray-800';
+      default: return 'bg-gray-100 text-gray-800';
+    }
+  };
+
+  const getFileIcon = (type) => {
+    switch (type.toLowerCase()) {
+      case 'pdf': return '📄';
+      case 'word': return '📝';
+      case 'excel': return '📊';
+      default: return '📄';
+    }
+  };
+
+  return (
+    <div className="space-y-6">
+      {/* Header */}
+      <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-bold text-gray-900">Quality Documents</h1>
+          <p className="text-gray-600">Manage quality manuals, SOPs, policies, and reports</p>
+        </div>
+        <div className="flex gap-3">
+          <button 
+            onClick={() => openModal('uploadDocument', <div>Upload Document Form</div>)}
+            className="bg-blue-600 text-white px-6 py-2 rounded-lg font-medium hover:bg-blue-700 transition-colors"
+          >
+            <Upload size={16} className="inline mr-2" />
+            Upload Document
+          </button>
+          <button className="bg-green-600 text-white px-6 py-2 rounded-lg font-medium hover:bg-green-700 transition-colors">
+            <Download size={16} className="inline mr-2" />
+            Bulk Export
+          </button>
+        </div>
+      </div>
+
+      {/* Document Statistics */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+        <div className="bg-white rounded-lg shadow-md p-6 border-l-4 border-blue-500">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm font-medium text-gray-500">Total Documents</p>
+              <p className="text-2xl font-bold text-gray-900">{documentStats.total}</p>
+            </div>
+            <FileText size={24} className="text-blue-500" />
+          </div>
+        </div>
+        <div className="bg-white rounded-lg shadow-md p-6 border-l-4 border-green-500">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm font-medium text-gray-500">Current Documents</p>
+              <p className="text-2xl font-bold text-gray-900">{documentStats.current}</p>
+            </div>
+            <CheckCircle size={24} className="text-green-500" />
+          </div>
+        </div>
+        <div className="bg-white rounded-lg shadow-md p-6 border-l-4 border-yellow-500">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm font-medium text-gray-500">Under Review</p>
+              <p className="text-2xl font-bold text-gray-900">{documentStats.underReview}</p>
+            </div>
+            <Clock size={24} className="text-yellow-500" />
+          </div>
+        </div>
+        <div className="bg-white rounded-lg shadow-md p-6 border-l-4 border-red-500">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm font-medium text-gray-500">Expiring Soon</p>
+              <p className="text-2xl font-bold text-gray-900">{documentStats.expiringSoon}</p>
+            </div>
+            <AlertTriangle size={24} className="text-red-500" />
+          </div>
+        </div>
+      </div>
+
+      {/* Search and Filter */}
+      <div className="bg-white rounded-lg shadow-md p-6">
+        <div className="flex flex-col lg:flex-row gap-4 mb-6">
+          <div className="flex-1 relative">
+            <Search size={20} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+            <input
+              type="text"
+              placeholder="Search documents..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            />
+          </div>
+          <div className="flex gap-3">
+            <select 
+              value={filterCategory}
+              onChange={(e) => setFilterCategory(e.target.value)}
+              className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            >
+              <option value="all">All Categories</option>
+              <option value="Quality Manual">Quality Manual</option>
+              <option value="SOP">SOPs</option>
+              <option value="Policy">Policies</option>
+              <option value="Reports">Reports</option>
+              <option value="Template">Templates</option>
+            </select>
+            <select 
+              value={sortBy}
+              onChange={(e) => setSortBy(e.target.value)}
+              className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            >
+              <option value="name">Sort by Name</option>
+              <option value="date">Sort by Date</option>
+              <option value="version">Sort by Version</option>
+            </select>
+          </div>
+        </div>
+
+        {/* Documents Table */}
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm text-left">
+            <thead className="text-xs text-gray-700 uppercase bg-gray-50">
+              <tr>
+                <th className="px-6 py-3">Document</th>
+                <th className="px-6 py-3">Category</th>
+                <th className="px-6 py-3">Version</th>
+                <th className="px-6 py-3">Status</th>
+                <th className="px-6 py-3">Last Modified</th>
+                <th className="px-6 py-3">Next Review</th>
+                <th className="px-6 py-3">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {filteredDocuments.map((doc) => (
+                <tr key={doc.id} className="bg-white border-b hover:bg-gray-50">
+                  <td className="px-6 py-4">
+                    <div className="flex items-center gap-3">
+                      <span className="text-2xl">{getFileIcon(doc.type)}</span>
+                      <div>
+                        <p className="font-medium text-gray-900">{doc.name}</p>
+                        <p className="text-xs text-gray-500">{doc.description}</p>
+                        <p className="text-xs text-gray-400">{doc.size} • {doc.type}</p>
+                      </div>
+                    </div>
+                  </td>
+                  <td className="px-6 py-4">
+                    <span className="px-2 py-1 bg-blue-100 text-blue-800 rounded-full text-xs font-medium">
+                      {doc.category}
+                    </span>
+                  </td>
+                  <td className="px-6 py-4 font-medium">v{doc.version}</td>
+                  <td className="px-6 py-4">
+                    <span className={clsx("px-2 py-1 rounded-full text-xs font-medium", getStatusColor(doc.status))}>
+                      {doc.status}
+                    </span>
+                  </td>
+                  <td className="px-6 py-4">{doc.lastModified}</td>
+                  <td className="px-6 py-4">
+                    <span className={clsx(
+                      doc.nextReview !== 'N/A' && documentStats.expiringSoon > 0 ? 'text-red-600 font-medium' : 'text-gray-600'
+                    )}>
+                      {doc.nextReview}
+                    </span>
+                  </td>
+                  <td className="px-6 py-4">
+                    <div className="flex items-center space-x-2">
+                      <button className="text-blue-600 hover:text-blue-800" title="View">
+                        <Eye size={16} />
+                      </button>
+                      <button className="text-green-600 hover:text-green-800" title="Download">
+                        <Download size={16} />
+                      </button>
+                      <button className="text-gray-600 hover:text-gray-800" title="Edit">
+                        <Edit size={16} />
+                      </button>
+                      <button className="text-red-600 hover:text-red-800" title="Delete">
+                        <Trash2 size={16} />
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      {/* Document Workflow */}
+      <div className="bg-white rounded-lg shadow-md p-6">
+        <h3 className="text-lg font-semibold mb-4">Document Approval Workflow</h3>
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+          <div className="text-center">
+            <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-3">
+              <Edit size={24} className="text-blue-600" />
+            </div>
+            <h4 className="font-medium text-gray-900">Draft</h4>
+            <p className="text-sm text-gray-600">Author creates document</p>
+          </div>
+          <div className="text-center">
+            <div className="w-12 h-12 bg-yellow-100 rounded-full flex items-center justify-center mx-auto mb-3">
+              <Eye size={24} className="text-yellow-600" />
+            </div>
+            <h4 className="font-medium text-gray-900">Review</h4>
+            <p className="text-sm text-gray-600">Subject matter expert review</p>
+          </div>
+          <div className="text-center">
+            <div className="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-3">
+              <CheckCircle size={24} className="text-purple-600" />
+            </div>
+            <h4 className="font-medium text-gray-900">Approval</h4>
+            <p className="text-sm text-gray-600">Management approval</p>
+          </div>
+          <div className="text-center">
+            <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-3">
+              <FileText size={24} className="text-green-600" />
+            </div>
+            <h4 className="font-medium text-gray-900">Active</h4>
+            <p className="text-sm text-gray-600">Document in use</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
 
 // Main App Component
 function App() {
