@@ -5810,17 +5810,43 @@ const ISO9001ReferenceGuide = () => {
       <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">ISO 9001 Reference Guide</h1>
-          <p className="text-gray-600">Comprehensive guide for ISO 9001 implementation in healthcare</p>
+          <p className="text-gray-600">Comprehensive guide for ISO 9001:2015 implementation in healthcare</p>
         </div>
         <div className="flex gap-3">
-          <button className="bg-blue-600 text-white px-6 py-2 rounded-lg font-medium hover:bg-blue-700 transition-colors">
+          <button 
+            onClick={downloadGuide}
+            className="bg-blue-600 text-white px-6 py-2 rounded-lg font-medium hover:bg-blue-700 transition-colors"
+          >
             <Download size={16} className="inline mr-2" />
             Download Guide
           </button>
-          <button className="bg-green-600 text-white px-6 py-2 rounded-lg font-medium hover:bg-green-700 transition-colors">
+          <button 
+            onClick={() => selectedChecklist ? printChecklist(selectedChecklist) : alert('Please select a checklist first')}
+            className="bg-green-600 text-white px-6 py-2 rounded-lg font-medium hover:bg-green-700 transition-colors"
+          >
             <FileText size={16} className="inline mr-2" />
             Print Checklist
           </button>
+        </div>
+      </div>
+
+      {/* Stats Overview */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <div className="bg-blue-50 p-4 rounded-lg">
+          <div className="text-2xl font-bold text-blue-600">{iso9001Clauses.length}</div>
+          <div className="text-sm text-gray-600">ISO 9001 Clauses</div>
+        </div>
+        <div className="bg-red-50 p-4 rounded-lg">
+          <div className="text-2xl font-bold text-red-600">{commonNCRs.reduce((total, cat) => total + cat.ncrs.length, 0)}</div>
+          <div className="text-sm text-gray-600">Common NCRs</div>
+        </div>
+        <div className="bg-green-50 p-4 rounded-lg">
+          <div className="text-2xl font-bold text-green-600">{auditChecklists.length}</div>
+          <div className="text-sm text-gray-600">Audit Checklists</div>
+        </div>
+        <div className="bg-purple-50 p-4 rounded-lg">
+          <div className="text-2xl font-bold text-purple-600">{auditChecklists.reduce((total, checklist) => total + checklist.items.length, 0)}</div>
+          <div className="text-sm text-gray-600">Audit Questions</div>
         </div>
       </div>
 
@@ -5829,21 +5855,27 @@ const ISO9001ReferenceGuide = () => {
         <div className="border-b border-gray-200">
           <nav className="-mb-px flex space-x-8 px-6">
             {[
-              { id: 'clauses', label: 'ISO 9001 Clauses' },
-              { id: 'ncrs', label: 'Common NCRs' },
-              { id: 'checklists', label: 'Audit Checklists' }
+              { id: 'clauses', label: 'ISO 9001 Clauses', count: iso9001Clauses.length },
+              { id: 'ncrs', label: 'Common NCRs', count: commonNCRs.reduce((total, cat) => total + cat.ncrs.length, 0) },
+              { id: 'checklists', label: 'Audit Checklists', count: auditChecklists.length }
             ].map((tab) => (
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
                 className={clsx(
-                  'py-4 px-1 border-b-2 font-medium text-sm transition-colors',
+                  'py-4 px-1 border-b-2 font-medium text-sm transition-colors flex items-center gap-2',
                   activeTab === tab.id
                     ? 'border-blue-500 text-blue-600'
                     : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
                 )}
               >
                 {tab.label}
+                <span className={clsx(
+                  'px-2 py-1 rounded-full text-xs font-medium',
+                  activeTab === tab.id ? 'bg-blue-100 text-blue-600' : 'bg-gray-100 text-gray-600'
+                )}>
+                  {tab.count}
+                </span>
               </button>
             ))}
           </nav>
@@ -5857,7 +5889,7 @@ const ISO9001ReferenceGuide = () => {
                 <Search size={20} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
                 <input
                   type="text"
-                  placeholder="Search ISO 9001 clauses..."
+                  placeholder="Search ISO 9001:2015 clauses..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
@@ -5867,7 +5899,7 @@ const ISO9001ReferenceGuide = () => {
               {/* Clauses List */}
               <div className="space-y-4">
                 {filteredClauses.map((clause) => (
-                  <div key={clause.number} className="border border-gray-200 rounded-lg">
+                  <div key={clause.number} className="border border-gray-200 rounded-lg hover:shadow-md transition-shadow">
                     <div 
                       className="p-4 cursor-pointer hover:bg-gray-50 transition-colors"
                       onClick={() => setSelectedClause(selectedClause === clause.number ? null : clause.number)}
@@ -5879,7 +5911,7 @@ const ISO9001ReferenceGuide = () => {
                           </h3>
                           <p className="text-sm text-gray-600 mt-1">{clause.description}</p>
                         </div>
-                        <div className="text-gray-400">
+                        <div className="text-gray-400 text-xl font-bold">
                           {selectedClause === clause.number ? '−' : '+'}
                         </div>
                       </div>
@@ -5890,14 +5922,20 @@ const ISO9001ReferenceGuide = () => {
                         <div className="space-y-4">
                           {/* Healthcare Example */}
                           <div>
-                            <h4 className="font-medium text-green-700 mb-2">Healthcare Implementation Example</h4>
-                            <p className="text-sm text-gray-700">{clause.healthcareExample}</p>
+                            <h4 className="font-medium text-green-700 mb-2 flex items-center gap-2">
+                              <Building2 size={16} />
+                              Healthcare Implementation Example
+                            </h4>
+                            <p className="text-sm text-gray-700 bg-green-50 p-3 rounded">{clause.healthcareExample}</p>
                           </div>
 
                           {/* Audit Questions */}
                           <div>
-                            <h4 className="font-medium text-blue-700 mb-2">Key Audit Questions</h4>
-                            <ul className="list-disc list-inside space-y-1 text-sm text-gray-700">
+                            <h4 className="font-medium text-blue-700 mb-2 flex items-center gap-2">
+                              <CheckCircle size={16} />
+                              Key Audit Questions
+                            </h4>
+                            <ul className="list-disc list-inside space-y-1 text-sm text-gray-700 bg-blue-50 p-3 rounded">
                               {clause.auditQuestions.map((question, index) => (
                                 <li key={index}>{question}</li>
                               ))}
@@ -5906,8 +5944,11 @@ const ISO9001ReferenceGuide = () => {
 
                           {/* Common NCRs */}
                           <div>
-                            <h4 className="font-medium text-red-700 mb-2">Common Non-Conformances</h4>
-                            <ul className="list-disc list-inside space-y-1 text-sm text-gray-700">
+                            <h4 className="font-medium text-red-700 mb-2 flex items-center gap-2">
+                              <AlertTriangle size={16} />
+                              Common Non-Conformances
+                            </h4>
+                            <ul className="list-disc list-inside space-y-1 text-sm text-gray-700 bg-red-50 p-3 rounded">
                               {clause.commonNCRs.map((ncr, index) => (
                                 <li key={index}>{ncr}</li>
                               ))}
@@ -5926,17 +5967,25 @@ const ISO9001ReferenceGuide = () => {
             <div className="space-y-6">
               <div>
                 <h3 className="text-lg font-semibold mb-4">Common Non-Conformance Reports (NCRs)</h3>
-                <p className="text-gray-600 mb-6">Typical findings during ISO 9001 audits in healthcare organizations</p>
+                <p className="text-gray-600 mb-6">Typical findings during ISO 9001:2015 audits in healthcare organizations</p>
               </div>
 
               <div className="space-y-6">
                 {commonNCRs.map((category) => (
                   <div key={category.category} className="bg-gray-50 rounded-lg p-6">
-                    <h4 className="font-medium text-gray-900 mb-4">{category.category}</h4>
+                    <h4 className="font-medium text-gray-900 mb-4 flex items-center gap-2">
+                      <AlertTriangle size={20} className="text-red-500" />
+                      {category.category}
+                      <span className="px-2 py-1 bg-red-100 text-red-800 rounded-full text-xs font-medium">
+                        {category.ncrs.length} NCRs
+                      </span>
+                    </h4>
                     <div className="space-y-3">
                       {category.ncrs.map((ncr, index) => (
                         <div key={index} className="flex items-start gap-3 p-3 bg-white rounded border-l-4 border-red-500">
-                          <AlertTriangle size={16} className="text-red-500 mt-0.5 flex-shrink-0" />
+                          <div className="w-6 h-6 bg-red-100 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                            <span className="text-red-600 text-xs font-bold">{index + 1}</span>
+                          </div>
                           <p className="text-sm text-gray-700">{ncr}</p>
                         </div>
                       ))}
@@ -5951,30 +6000,152 @@ const ISO9001ReferenceGuide = () => {
             <div className="space-y-6">
               <div>
                 <h3 className="text-lg font-semibold mb-4">Healthcare Audit Checklists</h3>
-                <p className="text-gray-600 mb-6">Ready-to-use checklists for conducting ISO 9001 audits in healthcare settings</p>
+                <p className="text-gray-600 mb-6">Comprehensive, ready-to-use checklists for conducting ISO 9001:2015 audits in healthcare settings</p>
               </div>
 
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                {auditChecklists.map((checklist, index) => (
-                  <div key={index} className="bg-white border border-gray-200 rounded-lg p-6">
-                    <h4 className="font-medium text-gray-900 mb-4">{checklist.title}</h4>
-                    <div className="space-y-3">
-                      {checklist.items.map((item, itemIndex) => (
-                        <div key={itemIndex} className="flex items-start gap-3">
-                          <input type="checkbox" className="mt-1 w-4 h-4 text-blue-600 rounded focus:ring-blue-500" />
-                          <label className="text-sm text-gray-700">{item}</label>
+              <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
+                {auditChecklists.map((checklist) => (
+                  <div key={checklist.id} className="bg-white border border-gray-200 rounded-lg p-6 hover:shadow-lg transition-shadow">
+                    <div className="flex justify-between items-start mb-4">
+                      <div>
+                        <h4 className="font-medium text-gray-900 mb-2">{checklist.title}</h4>
+                        <span className={clsx(
+                          "px-2 py-1 rounded-full text-xs font-medium",
+                          checklist.category === 'Clinical' ? 'bg-blue-100 text-blue-800' :
+                          checklist.category === 'Technical' ? 'bg-green-100 text-green-800' :
+                          checklist.category === 'Quality System' ? 'bg-purple-100 text-purple-800' :
+                          'bg-gray-100 text-gray-800'
+                        )}>
+                          {checklist.category}
+                        </span>
+                      </div>
+                    </div>
+                    
+                    <p className="text-sm text-gray-600 mb-4">{checklist.description}</p>
+
+                    <div className="space-y-2 mb-4">
+                      <div className="flex justify-between text-sm">
+                        <span className="text-gray-600">Total Items:</span>
+                        <span className="font-medium">{checklist.items.length}</span>
+                      </div>
+                      <div className="flex justify-between text-sm">
+                        <span className="text-gray-600">Critical Items:</span>
+                        <span className="font-medium text-red-600">{checklist.items.filter(item => item.critical).length}</span>
+                      </div>
+                    </div>
+
+                    <div className="space-y-2 mb-4 max-h-32 overflow-y-auto">
+                      {checklist.items.slice(0, 3).map((item) => (
+                        <div key={item.id} className="flex items-start gap-2 text-xs text-gray-600">
+                          <span className="w-2 h-2 bg-blue-500 rounded-full flex-shrink-0 mt-1.5"></span>
+                          <span>{item.question}</span>
                         </div>
                       ))}
+                      {checklist.items.length > 3 && (
+                        <div className="text-xs text-gray-500 text-center">
+                          +{checklist.items.length - 3} more items
+                        </div>
+                      )}
                     </div>
-                    <div className="mt-4 pt-4 border-t border-gray-200">
-                      <button className="text-blue-600 hover:text-blue-800 text-sm font-medium">
+
+                    <div className="flex gap-2">
+                      <button 
+                        onClick={() => {
+                          setSelectedChecklist(checklist);
+                          downloadChecklistPDF(checklist);
+                        }}
+                        className="flex-1 text-blue-600 hover:text-blue-800 text-sm font-medium py-2 px-3 border border-blue-200 rounded hover:bg-blue-50 transition-colors"
+                      >
                         <Download size={14} className="inline mr-1" />
                         Download PDF
+                      </button>
+                      <button 
+                        onClick={() => {
+                          setSelectedChecklist(checklist);
+                          printChecklist(checklist);
+                        }}
+                        className="flex-1 text-green-600 hover:text-green-800 text-sm font-medium py-2 px-3 border border-green-200 rounded hover:bg-green-50 transition-colors"
+                      >
+                        <FileText size={14} className="inline mr-1" />
+                        Print
                       </button>
                     </div>
                   </div>
                 ))}
               </div>
+
+              {/* Detailed Checklist View */}
+              {selectedChecklist && (
+                <div className="mt-8 bg-white border border-gray-200 rounded-lg p-6">
+                  <div className="flex justify-between items-center mb-6">
+                    <div>
+                      <h4 className="text-lg font-semibold text-gray-900">{selectedChecklist.title}</h4>
+                      <p className="text-gray-600">{selectedChecklist.description}</p>
+                    </div>
+                    <button 
+                      onClick={() => setSelectedChecklist(null)}
+                      className="text-gray-400 hover:text-gray-600"
+                    >
+                      <X size={24} />
+                    </button>
+                  </div>
+
+                  <div className="overflow-x-auto">
+                    <table className="w-full border-collapse border border-gray-300">
+                      <thead>
+                        <tr className="bg-gray-50">
+                          <th className="border border-gray-300 px-4 py-3 text-left text-sm font-medium text-gray-900">#</th>
+                          <th className="border border-gray-300 px-4 py-3 text-left text-sm font-medium text-gray-900">ISO Clause</th>
+                          <th className="border border-gray-300 px-4 py-3 text-left text-sm font-medium text-gray-900">Audit Question</th>
+                          <th className="border border-gray-300 px-4 py-3 text-left text-sm font-medium text-gray-900">Critical</th>
+                          <th className="border border-gray-300 px-4 py-3 text-left text-sm font-medium text-gray-900">Result</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {selectedChecklist.items.map((item) => (
+                          <tr key={item.id} className={item.critical ? 'bg-red-50' : 'hover:bg-gray-50'}>
+                            <td className="border border-gray-300 px-4 py-3 text-sm">{item.id}</td>
+                            <td className="border border-gray-300 px-4 py-3 text-sm font-medium text-blue-600">{item.clause}</td>
+                            <td className="border border-gray-300 px-4 py-3 text-sm">{item.question}</td>
+                            <td className="border border-gray-300 px-4 py-3 text-sm">
+                              {item.critical ? (
+                                <span className="px-2 py-1 bg-red-100 text-red-800 rounded-full text-xs font-medium">Yes</span>
+                              ) : (
+                                <span className="px-2 py-1 bg-gray-100 text-gray-800 rounded-full text-xs font-medium">No</span>
+                              )}
+                            </td>
+                            <td className="border border-gray-300 px-4 py-3 text-sm">
+                              <input
+                                type="checkbox"
+                                checked={checkedItems[`${selectedChecklist.id}-${item.id}`] || false}
+                                onChange={() => handleCheckboxChange(selectedChecklist.id, item.id)}
+                                className="w-4 h-4 text-blue-600 rounded focus:ring-blue-500"
+                              />
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+
+                  <div className="mt-6 flex justify-end gap-3">
+                    <button 
+                      onClick={() => downloadChecklistPDF(selectedChecklist)}
+                      className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                    >
+                      <Download size={16} className="inline mr-2" />
+                      Download PDF
+                    </button>
+                    <button 
+                      onClick={() => printChecklist(selectedChecklist)}
+                      className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
+                    >
+                      <FileText size={16} className="inline mr-2" />
+                      Print Checklist
+                    </button>
+                  </div>
+                </div>
+              )}
             </div>
           )}
         </div>
