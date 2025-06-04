@@ -139,8 +139,8 @@ const ModalContext = createContext();
 const ModalProvider = ({ children }) => {
   const [modals, setModals] = useState({});
 
-  const openModal = (id, content, title = 'Modal') => {
-    setModals(prev => ({ ...prev, [id]: { content, title } }));
+  const openModal = (id, content, title = 'Modal', options = {}) => {
+    setModals(prev => ({ ...prev, [id]: { content, title, ...options } }));
   };
 
   const closeModal = (id) => {
