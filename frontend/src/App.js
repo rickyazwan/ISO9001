@@ -1617,13 +1617,16 @@ const AuditManagement = () => {
         </div>
         <div className="flex gap-3">
           <button 
-            onClick={() => openModal('scheduleAudit', <div>Schedule New Audit Form</div>)}
+            onClick={() => openModal('scheduleAudit')}
             className="bg-blue-600 text-white px-6 py-2 rounded-lg font-medium hover:bg-blue-700 transition-colors"
           >
             <Plus size={16} className="inline mr-2" />
             Schedule Audit
           </button>
-          <button className="bg-green-600 text-white px-6 py-2 rounded-lg font-medium hover:bg-green-700 transition-colors">
+          <button 
+            onClick={() => exportData(filteredAudits, 'audit-report', 'excel')}
+            className="bg-green-600 text-white px-6 py-2 rounded-lg font-medium hover:bg-green-700 transition-colors"
+          >
             <Download size={16} className="inline mr-2" />
             Export
           </button>
