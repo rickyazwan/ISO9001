@@ -202,6 +202,12 @@ const ModalProvider = ({ children }) => {
         return 'Schedule New Event';
       case 'exportCalendar':
         return 'Export Calendar';
+      case 'uploadDocument':
+        return 'Upload Document';
+      case 'bulkExportDocuments':
+        return 'Bulk Export Documents';
+      case 'viewDocument':
+        return 'View Document';
       default:
         return modalData.title;
     }
