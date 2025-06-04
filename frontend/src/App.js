@@ -160,25 +160,870 @@ const useModal = () => {
   return context;
 };
 
-// Modal Component
-const Modal = ({ id, children, onClose }) => {
+// Enhanced Modal Components with Forms
+
+// Add Facility Form
+const AddFacilityForm = ({ onClose }) => {
+  const [formData, setFormData] = useState({
+    name: '',
+    type: 'hospital',
+    address: '',
+    city: '',
+    state: '',
+    zipCode: '',
+    phone: '',
+    email: '',
+    manager: '',
+    capacity: '',
+    services: [],
+    certifications: []
+  });
+
+  const facilityTypes = ['Hospital', 'Clinic', 'Emergency Center', 'Specialty Center', 'Outpatient Facility'];
+  const serviceOptions = ['Emergency Care', 'Surgery', 'Maternity', 'Pediatrics', 'ICU', 'Radiology', 'Laboratory'];
+  const certificationOptions = ['Joint Commission', 'ISO 9001', 'ISO 14001', 'OSHA', 'HIPAA', 'CLIA'];
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    // Simulate API call
+    setTimeout(() => {
+      alert(`Facility "${formData.name}" has been successfully added to the system!`);
+      onClose();
+    }, 1000);
+  };
+
+  const handleServiceChange = (service) => {
+    setFormData(prev => ({
+      ...prev,
+      services: prev.services.includes(service)
+        ? prev.services.filter(s => s !== service)
+        : [...prev.services, service]
+    }));
+  };
+
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-        <div className="flex justify-between items-center p-6 border-b">
-          <h2 className="text-xl font-semibold">Modal</h2>
-          <button
-            onClick={onClose}
-            className="text-gray-400 hover:text-gray-600 transition-colors"
-          >
-            <X size={24} />
-          </button>
+    <form onSubmit={handleSubmit} className="space-y-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">Facility Name *</label>
+          <input
+            type="text"
+            required
+            value={formData.name}
+            onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
+            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            placeholder="Enter facility name"
+          />
         </div>
-        <div className="p-6">
-          {children}
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">Facility Type *</label>
+          <select
+            required
+            value={formData.type}
+            onChange={(e) => setFormData(prev => ({ ...prev, type: e.target.value }))}
+            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+          >
+            {facilityTypes.map(type => (
+              <option key={type} value={type.toLowerCase()}>{type}</option>
+            ))}
+          </select>
         </div>
       </div>
-    </div>
+
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-2">Address *</label>
+        <input
+          type="text"
+          required
+          value={formData.address}
+          onChange={(e) => setFormData(prev => ({ ...prev, address: e.target.value }))}
+          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+          placeholder="Street address"
+        />
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">City *</label>
+          <input
+            type="text"
+            required
+            value={formData.city}
+            onChange={(e) => setFormData(prev => ({ ...prev, city: e.target.value }))}
+            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+          />
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">State *</label>
+          <input
+            type="text"
+            required
+            value={formData.state}
+            onChange={(e) => setFormData(prev => ({ ...prev, state: e.target.value }))}
+            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+          />
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">ZIP Code *</label>
+          <input
+            type="text"
+            required
+            value={formData.zipCode}
+            onChange={(e) => setFormData(prev => ({ ...prev, zipCode: e.target.value }))}
+            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+          />
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">Phone Number *</label>
+          <input
+            type="tel"
+            required
+            value={formData.phone}
+            onChange={(e) => setFormData(prev => ({ ...prev, phone: e.target.value }))}
+            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            placeholder="(555) 123-4567"
+          />
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">Email Address *</label>
+          <input
+            type="email"
+            required
+            value={formData.email}
+            onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
+            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            placeholder="facility@hospital.com"
+          />
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">Facility Manager *</label>
+          <input
+            type="text"
+            required
+            value={formData.manager}
+            onChange={(e) => setFormData(prev => ({ ...prev, manager: e.target.value }))}
+            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            placeholder="Manager name"
+          />
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">Bed Capacity</label>
+          <input
+            type="number"
+            value={formData.capacity}
+            onChange={(e) => setFormData(prev => ({ ...prev, capacity: e.target.value }))}
+            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            placeholder="Number of beds"
+          />
+        </div>
+      </div>
+
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-2">Services Offered</label>
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+          {serviceOptions.map(service => (
+            <label key={service} className="flex items-center">
+              <input
+                type="checkbox"
+                checked={formData.services.includes(service)}
+                onChange={() => handleServiceChange(service)}
+                className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500"
+              />
+              <span className="ml-2 text-sm text-gray-700">{service}</span>
+            </label>
+          ))}
+        </div>
+      </div>
+
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-2">Current Certifications</label>
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+          {certificationOptions.map(cert => (
+            <label key={cert} className="flex items-center">
+              <input
+                type="checkbox"
+                checked={formData.certifications.includes(cert)}
+                onChange={() => setFormData(prev => ({
+                  ...prev,
+                  certifications: prev.certifications.includes(cert)
+                    ? prev.certifications.filter(c => c !== cert)
+                    : [...prev.certifications, cert]
+                }))}
+                className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500"
+              />
+              <span className="ml-2 text-sm text-gray-700">{cert}</span>
+            </label>
+          ))}
+        </div>
+      </div>
+
+      <div className="flex justify-end space-x-3 pt-6 border-t">
+        <button
+          type="button"
+          onClick={onClose}
+          className="px-4 py-2 text-gray-700 bg-gray-200 rounded-lg hover:bg-gray-300 transition-colors"
+        >
+          Cancel
+        </button>
+        <button
+          type="submit"
+          className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+        >
+          Add Facility
+        </button>
+      </div>
+    </form>
+  );
+};
+
+// Schedule Audit Form
+const ScheduleAuditForm = ({ onClose }) => {
+  const [formData, setFormData] = useState({
+    facility: '',
+    auditType: 'internal',
+    auditScope: '',
+    startDate: '',
+    endDate: '',
+    leadAuditor: '',
+    auditTeam: [],
+    objectives: '',
+    standards: [],
+    priority: 'medium',
+    notifications: true
+  });
+
+  const facilities = ['General Hospital', 'Emergency Center', 'Pediatric Ward', 'Outpatient Clinic', 'Surgical Center'];
+  const auditors = ['Dr. Smith', 'Dr. Johnson', 'Jane Doe', 'Mike Brown', 'Sarah Wilson'];
+  const standardOptions = ['ISO 9001', 'Joint Commission', 'OSHA', 'HIPAA', 'CMS', 'State Regulations'];
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    setTimeout(() => {
+      alert(`Audit for "${formData.facility}" has been scheduled successfully!`);
+      onClose();
+    }, 1000);
+  };
+
+  return (
+    <form onSubmit={handleSubmit} className="space-y-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">Facility *</label>
+          <select
+            required
+            value={formData.facility}
+            onChange={(e) => setFormData(prev => ({ ...prev, facility: e.target.value }))}
+            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+          >
+            <option value="">Select facility</option>
+            {facilities.map(facility => (
+              <option key={facility} value={facility}>{facility}</option>
+            ))}
+          </select>
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">Audit Type *</label>
+          <select
+            required
+            value={formData.auditType}
+            onChange={(e) => setFormData(prev => ({ ...prev, auditType: e.target.value }))}
+            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+          >
+            <option value="internal">Internal Audit</option>
+            <option value="external">External Audit</option>
+            <option value="surveillance">Surveillance Audit</option>
+            <option value="certification">Certification Audit</option>
+          </select>
+        </div>
+      </div>
+
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-2">Audit Scope *</label>
+        <textarea
+          required
+          value={formData.auditScope}
+          onChange={(e) => setFormData(prev => ({ ...prev, auditScope: e.target.value }))}
+          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+          rows="3"
+          placeholder="Describe the scope and areas to be audited..."
+        />
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">Start Date *</label>
+          <input
+            type="date"
+            required
+            value={formData.startDate}
+            onChange={(e) => setFormData(prev => ({ ...prev, startDate: e.target.value }))}
+            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+          />
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">End Date *</label>
+          <input
+            type="date"
+            required
+            value={formData.endDate}
+            onChange={(e) => setFormData(prev => ({ ...prev, endDate: e.target.value }))}
+            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+          />
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">Lead Auditor *</label>
+          <select
+            required
+            value={formData.leadAuditor}
+            onChange={(e) => setFormData(prev => ({ ...prev, leadAuditor: e.target.value }))}
+            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+          >
+            <option value="">Select lead auditor</option>
+            {auditors.map(auditor => (
+              <option key={auditor} value={auditor}>{auditor}</option>
+            ))}
+          </select>
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">Priority Level</label>
+          <select
+            value={formData.priority}
+            onChange={(e) => setFormData(prev => ({ ...prev, priority: e.target.value }))}
+            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+          >
+            <option value="low">Low</option>
+            <option value="medium">Medium</option>
+            <option value="high">High</option>
+            <option value="critical">Critical</option>
+          </select>
+        </div>
+      </div>
+
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-2">Standards to Audit</label>
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+          {standardOptions.map(standard => (
+            <label key={standard} className="flex items-center">
+              <input
+                type="checkbox"
+                checked={formData.standards.includes(standard)}
+                onChange={() => setFormData(prev => ({
+                  ...prev,
+                  standards: prev.standards.includes(standard)
+                    ? prev.standards.filter(s => s !== standard)
+                    : [...prev.standards, standard]
+                }))}
+                className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500"
+              />
+              <span className="ml-2 text-sm text-gray-700">{standard}</span>
+            </label>
+          ))}
+        </div>
+      </div>
+
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-2">Audit Objectives</label>
+        <textarea
+          value={formData.objectives}
+          onChange={(e) => setFormData(prev => ({ ...prev, objectives: e.target.value }))}
+          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+          rows="3"
+          placeholder="Define the specific objectives and goals for this audit..."
+        />
+      </div>
+
+      <div>
+        <label className="flex items-center">
+          <input
+            type="checkbox"
+            checked={formData.notifications}
+            onChange={(e) => setFormData(prev => ({ ...prev, notifications: e.target.checked }))}
+            className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500"
+          />
+          <span className="ml-2 text-sm text-gray-700">Send notifications to audit team and facility manager</span>
+        </label>
+      </div>
+
+      <div className="flex justify-end space-x-3 pt-6 border-t">
+        <button
+          type="button"
+          onClick={onClose}
+          className="px-4 py-2 text-gray-700 bg-gray-200 rounded-lg hover:bg-gray-300 transition-colors"
+        >
+          Cancel
+        </button>
+        <button
+          type="submit"
+          className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+        >
+          Schedule Audit
+        </button>
+      </div>
+    </form>
+  );
+};
+
+// Create CAPA Form
+const CreateCAPAForm = ({ onClose }) => {
+  const [formData, setFormData] = useState({
+    title: '',
+    category: 'safety',
+    priority: 'medium',
+    description: '',
+    rootCause: '',
+    correctiveAction: '',
+    preventiveAction: '',
+    assignee: '',
+    dueDate: '',
+    facility: '',
+    relatedIncident: '',
+    riskLevel: 'medium',
+    approver: '',
+    resources: ''
+  });
+
+  const categories = ['Safety', 'Quality', 'Equipment', 'Process', 'Training', 'Documentation', 'Compliance'];
+  const assignees = ['Quality Team', 'Safety Officer', 'IT Team', 'Maintenance', 'HR Department', 'Clinical Staff'];
+  const facilities = ['General Hospital', 'Emergency Center', 'Pediatric Ward', 'Outpatient Clinic', 'All Facilities'];
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    setTimeout(() => {
+      alert(`CAPA "${formData.title}" has been created successfully!`);
+      onClose();
+    }, 1000);
+  };
+
+  return (
+    <form onSubmit={handleSubmit} className="space-y-6">
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-2">CAPA Title *</label>
+        <input
+          type="text"
+          required
+          value={formData.title}
+          onChange={(e) => setFormData(prev => ({ ...prev, title: e.target.value }))}
+          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+          placeholder="Enter descriptive title for the CAPA"
+        />
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">Category *</label>
+          <select
+            required
+            value={formData.category}
+            onChange={(e) => setFormData(prev => ({ ...prev, category: e.target.value }))}
+            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+          >
+            {categories.map(cat => (
+              <option key={cat} value={cat.toLowerCase()}>{cat}</option>
+            ))}
+          </select>
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">Priority *</label>
+          <select
+            required
+            value={formData.priority}
+            onChange={(e) => setFormData(prev => ({ ...prev, priority: e.target.value }))}
+            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+          >
+            <option value="low">Low</option>
+            <option value="medium">Medium</option>
+            <option value="high">High</option>
+            <option value="critical">Critical</option>
+          </select>
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">Risk Level</label>
+          <select
+            value={formData.riskLevel}
+            onChange={(e) => setFormData(prev => ({ ...prev, riskLevel: e.target.value }))}
+            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+          >
+            <option value="low">Low Risk</option>
+            <option value="medium">Medium Risk</option>
+            <option value="high">High Risk</option>
+            <option value="critical">Critical Risk</option>
+          </select>
+        </div>
+      </div>
+
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-2">Problem Description *</label>
+        <textarea
+          required
+          value={formData.description}
+          onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
+          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+          rows="3"
+          placeholder="Describe the problem or non-conformance that requires CAPA..."
+        />
+      </div>
+
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-2">Root Cause Analysis *</label>
+        <textarea
+          required
+          value={formData.rootCause}
+          onChange={(e) => setFormData(prev => ({ ...prev, rootCause: e.target.value }))}
+          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+          rows="3"
+          placeholder="Identify and describe the root cause(s) of the problem..."
+        />
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">Corrective Action *</label>
+          <textarea
+            required
+            value={formData.correctiveAction}
+            onChange={(e) => setFormData(prev => ({ ...prev, correctiveAction: e.target.value }))}
+            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            rows="3"
+            placeholder="Actions to fix the immediate problem..."
+          />
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">Preventive Action *</label>
+          <textarea
+            required
+            value={formData.preventiveAction}
+            onChange={(e) => setFormData(prev => ({ ...prev, preventiveAction: e.target.value }))}
+            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            rows="3"
+            placeholder="Actions to prevent recurrence..."
+          />
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">Assigned To *</label>
+          <select
+            required
+            value={formData.assignee}
+            onChange={(e) => setFormData(prev => ({ ...prev, assignee: e.target.value }))}
+            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+          >
+            <option value="">Select assignee</option>
+            {assignees.map(assignee => (
+              <option key={assignee} value={assignee}>{assignee}</option>
+            ))}
+          </select>
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">Due Date *</label>
+          <input
+            type="date"
+            required
+            value={formData.dueDate}
+            onChange={(e) => setFormData(prev => ({ ...prev, dueDate: e.target.value }))}
+            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+          />
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">Affected Facility</label>
+          <select
+            value={formData.facility}
+            onChange={(e) => setFormData(prev => ({ ...prev, facility: e.target.value }))}
+            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+          >
+            <option value="">Select facility</option>
+            {facilities.map(facility => (
+              <option key={facility} value={facility}>{facility}</option>
+            ))}
+          </select>
+        </div>
+      </div>
+
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-2">Resources Required</label>
+        <textarea
+          value={formData.resources}
+          onChange={(e) => setFormData(prev => ({ ...prev, resources: e.target.value }))}
+          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+          rows="2"
+          placeholder="List any resources, budget, or support needed..."
+        />
+      </div>
+
+      <div className="flex justify-end space-x-3 pt-6 border-t">
+        <button
+          type="button"
+          onClick={onClose}
+          className="px-4 py-2 text-gray-700 bg-gray-200 rounded-lg hover:bg-gray-300 transition-colors"
+        >
+          Cancel
+        </button>
+        <button
+          type="submit"
+          className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+        >
+          Create CAPA
+        </button>
+      </div>
+    </form>
+  );
+};
+
+// Generate Report Form
+const GenerateReportForm = ({ onClose }) => {
+  const [formData, setFormData] = useState({
+    reportType: 'compliance',
+    title: '',
+    description: '',
+    dateRange: 'lastMonth',
+    startDate: '',
+    endDate: '',
+    facilities: [],
+    includeCharts: true,
+    includeData: true,
+    format: 'pdf',
+    recipients: [],
+    schedule: 'none',
+    scheduleFrequency: 'monthly'
+  });
+
+  const reportTypes = [
+    { value: 'compliance', label: 'Compliance Report' },
+    { value: 'safety', label: 'Patient Safety Report' },
+    { value: 'audit', label: 'Audit Summary Report' },
+    { value: 'capa', label: 'CAPA Analysis Report' },
+    { value: 'performance', label: 'Performance Dashboard' },
+    { value: 'custom', label: 'Custom Report' }
+  ];
+
+  const facilities = ['All Facilities', 'General Hospital', 'Emergency Center', 'Pediatric Ward', 'Outpatient Clinic'];
+  const recipients = ['CEO', 'Quality Director', 'Medical Director', 'Facility Managers', 'Audit Team'];
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    setTimeout(() => {
+      alert(`Report "${formData.title}" is being generated. You will be notified when it's ready for download.`);
+      onClose();
+    }, 1000);
+  };
+
+  return (
+    <form onSubmit={handleSubmit} className="space-y-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">Report Type *</label>
+          <select
+            required
+            value={formData.reportType}
+            onChange={(e) => setFormData(prev => ({ ...prev, reportType: e.target.value }))}
+            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+          >
+            {reportTypes.map(type => (
+              <option key={type.value} value={type.value}>{type.label}</option>
+            ))}
+          </select>
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">Report Format</label>
+          <select
+            value={formData.format}
+            onChange={(e) => setFormData(prev => ({ ...prev, format: e.target.value }))}
+            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+          >
+            <option value="pdf">PDF</option>
+            <option value="excel">Excel</option>
+            <option value="word">Word Document</option>
+            <option value="csv">CSV Data</option>
+          </select>
+        </div>
+      </div>
+
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-2">Report Title *</label>
+        <input
+          type="text"
+          required
+          value={formData.title}
+          onChange={(e) => setFormData(prev => ({ ...prev, title: e.target.value }))}
+          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+          placeholder="Enter report title"
+        />
+      </div>
+
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-2">Description</label>
+        <textarea
+          value={formData.description}
+          onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
+          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+          rows="3"
+          placeholder="Brief description of the report content and purpose..."
+        />
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">Date Range</label>
+          <select
+            value={formData.dateRange}
+            onChange={(e) => setFormData(prev => ({ ...prev, dateRange: e.target.value }))}
+            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+          >
+            <option value="lastWeek">Last 7 days</option>
+            <option value="lastMonth">Last 30 days</option>
+            <option value="lastQuarter">Last Quarter</option>
+            <option value="lastYear">Last Year</option>
+            <option value="custom">Custom Range</option>
+          </select>
+        </div>
+        {formData.dateRange === 'custom' && (
+          <>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Start Date</label>
+              <input
+                type="date"
+                value={formData.startDate}
+                onChange={(e) => setFormData(prev => ({ ...prev, startDate: e.target.value }))}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">End Date</label>
+              <input
+                type="date"
+                value={formData.endDate}
+                onChange={(e) => setFormData(prev => ({ ...prev, endDate: e.target.value }))}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              />
+            </div>
+          </>
+        )}
+      </div>
+
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-2">Include Facilities</label>
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+          {facilities.map(facility => (
+            <label key={facility} className="flex items-center">
+              <input
+                type="checkbox"
+                checked={formData.facilities.includes(facility)}
+                onChange={() => setFormData(prev => ({
+                  ...prev,
+                  facilities: prev.facilities.includes(facility)
+                    ? prev.facilities.filter(f => f !== facility)
+                    : [...prev.facilities, facility]
+                }))}
+                className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500"
+              />
+              <span className="ml-2 text-sm text-gray-700">{facility}</span>
+            </label>
+          ))}
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+          <label className="flex items-center">
+            <input
+              type="checkbox"
+              checked={formData.includeCharts}
+              onChange={(e) => setFormData(prev => ({ ...prev, includeCharts: e.target.checked }))}
+              className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500"
+            />
+            <span className="ml-2 text-sm text-gray-700">Include charts and visualizations</span>
+          </label>
+        </div>
+        <div>
+          <label className="flex items-center">
+            <input
+              type="checkbox"
+              checked={formData.includeData}
+              onChange={(e) => setFormData(prev => ({ ...prev, includeData: e.target.checked }))}
+              className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500"
+            />
+            <span className="ml-2 text-sm text-gray-700">Include detailed data tables</span>
+          </label>
+        </div>
+      </div>
+
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-2">Email Recipients</label>
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+          {recipients.map(recipient => (
+            <label key={recipient} className="flex items-center">
+              <input
+                type="checkbox"
+                checked={formData.recipients.includes(recipient)}
+                onChange={() => setFormData(prev => ({
+                  ...prev,
+                  recipients: prev.recipients.includes(recipient)
+                    ? prev.recipients.filter(r => r !== recipient)
+                    : [...prev.recipients, recipient]
+                }))}
+                className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500"
+              />
+              <span className="ml-2 text-sm text-gray-700">{recipient}</span>
+            </label>
+          ))}
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">Schedule Report</label>
+          <select
+            value={formData.schedule}
+            onChange={(e) => setFormData(prev => ({ ...prev, schedule: e.target.value }))}
+            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+          >
+            <option value="none">Generate Once</option>
+            <option value="scheduled">Schedule Recurring</option>
+          </select>
+        </div>
+        {formData.schedule === 'scheduled' && (
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Frequency</label>
+            <select
+              value={formData.scheduleFrequency}
+              onChange={(e) => setFormData(prev => ({ ...prev, scheduleFrequency: e.target.value }))}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            >
+              <option value="weekly">Weekly</option>
+              <option value="monthly">Monthly</option>
+              <option value="quarterly">Quarterly</option>
+              <option value="yearly">Yearly</option>
+            </select>
+          </div>
+        )}
+      </div>
+
+      <div className="flex justify-end space-x-3 pt-6 border-t">
+        <button
+          type="button"
+          onClick={onClose}
+          className="px-4 py-2 text-gray-700 bg-gray-200 rounded-lg hover:bg-gray-300 transition-colors"
+        >
+          Cancel
+        </button>
+        <button
+          type="submit"
+          className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+        >
+          Generate Report
+        </button>
+      </div>
+    </form>
   );
 };
 
