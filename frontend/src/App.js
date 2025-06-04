@@ -2970,13 +2970,30 @@ const ReportsAnalytics = () => {
                 </div>
 
                 <div className="mt-6 flex gap-3">
-                  <button className="bg-blue-600 text-white px-6 py-2 rounded-lg font-medium hover:bg-blue-700 transition-colors">
+                  <button 
+                    onClick={() => openModal('generateReport')}
+                    className="bg-blue-600 text-white px-6 py-2 rounded-lg font-medium hover:bg-blue-700 transition-colors"
+                  >
                     Generate Report
                   </button>
-                  <button className="bg-gray-200 text-gray-700 px-6 py-2 rounded-lg font-medium hover:bg-gray-300 transition-colors">
+                  <button 
+                    onClick={() => {
+                      setTimeout(() => {
+                        alert('Report template has been saved successfully!');
+                      }, 500);
+                    }}
+                    className="bg-gray-200 text-gray-700 px-6 py-2 rounded-lg font-medium hover:bg-gray-300 transition-colors"
+                  >
                     Save Template
                   </button>
-                  <button className="bg-green-600 text-white px-6 py-2 rounded-lg font-medium hover:bg-green-700 transition-colors">
+                  <button 
+                    onClick={() => {
+                      setTimeout(() => {
+                        alert('Report has been scheduled successfully!');
+                      }, 500);
+                    }}
+                    className="bg-green-600 text-white px-6 py-2 rounded-lg font-medium hover:bg-green-700 transition-colors"
+                  >
                     Schedule Report
                   </button>
                 </div>
