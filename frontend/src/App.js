@@ -30,7 +30,8 @@ import {
   Trash2,
   Bell,
   Globe,
-  User
+  User,
+  LogOut
 } from 'lucide-react';
 import { 
   LineChart, 
