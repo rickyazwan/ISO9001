@@ -437,10 +437,7 @@ const AdvancedFilter = ({ onApplyFilters, onClose }) => {
     </div>
   );
 };
-};
 
-// Safety Advanced Filter Component
-const SafetyAdvancedFilter = ({ onApplyFilters, onClose }) => {
   const [filters, setFilters] = useState({
     dateRange: 'all',
     startDate: '',
