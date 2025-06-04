@@ -177,6 +177,12 @@ const ModalProvider = ({ children }) => {
         return <BulkExportDocumentsForm onClose={() => closeModal(id)} />;
       case 'viewDocument':
         return <ViewDocumentModal document={modalData.document} onClose={() => closeModal(id)} />;
+      case 'addUser':
+        return <AddUserForm onClose={() => closeModal(id)} />;
+      case 'editUser':
+        return <EditUserForm user={modalData.user} onClose={() => closeModal(id)} />;
+      case 'changeFacilityName':
+        return <ChangeFacilityNameForm onClose={() => closeModal(id)} />;
       default:
         return modalData.content;
     }
