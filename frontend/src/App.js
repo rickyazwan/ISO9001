@@ -3617,6 +3617,980 @@ const ViewDocumentModal = ({ document, onClose }) => {
   );
 };
 
+// Add User Form
+const AddUserForm = ({ onClose }) => {
+  const [formData, setFormData] = useState({
+    firstName: '',
+    lastName: '',
+    email: '',
+    password: '',
+    confirmPassword: '',
+    role: 'Auditor',
+    department: '',
+    facility: '',
+    phoneNumber: '',
+    employeeId: '',
+    jobTitle: '',
+    permissions: [],
+    isActive: true,
+    sendWelcomeEmail: true,
+    temporaryPassword: false
+  });
+
+  const roles = ['Administrator', 'Quality Manager', 'Auditor', 'Safety Officer', 'Clinical Staff', 'IT Support'];
+  const departments = ['Quality Assurance', 'Clinical Operations', 'Administration', 'IT', 'HR', 'Finance', 'Pharmacy', 'Laboratory'];
+  const facilities = ['General Hospital', 'Emergency Center', 'Pediatric Ward', 'Outpatient Clinic', 'All Facilities'];
+  const permissions = [
+    'View Dashboard', 'Manage Audits', 'Manage CAPAs', 'Generate Reports', 
+    'Manage Documents', 'View Patient Safety', 'Manage Users', 'System Settings'
+  ];
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+
+    // Validation
+    if (formData.password !== formData.confirmPassword) {
+      alert('Passwords do not match');
+      return;
+    }
+
+    if (formData.password.length < 8) {
+      alert('Password must be at least 8 characters long');
+      return;
+    }
+
+    // Simulate user creation
+    setTimeout(() => {
+      const userId = 'USR-' + new Date().getFullYear() + '-' + String(Math.floor(Math.random() * 1000)).padStart(3, '0');
+      alert(`User "${formData.firstName} ${formData.lastName}" has been created successfully!\n\nUser ID: ${userId}\n\n${formData.sendWelcomeEmail ? 'Welcome email has been sent to ' + formData.email : 'No welcome email sent'}`);
+      onClose();
+    }, 1000);
+  };
+
+  const handlePermissionChange = (permission) => {
+    setFormData(prev => ({
+      ...prev,
+      permissions: prev.permissions.includes(permission)
+        ? prev.permissions.filter(p => p !== permission)
+        : [...prev.permissions, permission]
+    }));
+  };
+
+  return (
+    <form onSubmit={handleSubmit} className="space-y-6">
+      {/* Personal Information */}
+      <div className="bg-blue-50 p-4 rounded-lg">
+        <h3 className="font-medium text-blue-800 mb-3">Personal Information</h3>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">First Name *</label>
+            <input
+              type="text"
+              required
+              value={formData.firstName}
+              onChange={(e) => setFormData(prev => ({ ...prev, firstName: e.target.value }))}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              placeholder="Enter first name"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Last Name *</label>
+            <input
+              type="text"
+              required
+              value={formData.lastName}
+              onChange={(e) => setFormData(prev => ({ ...prev, lastName: e.target.value }))}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              placeholder="Enter last name"
+            />
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Email Address *</label>
+            <input
+              type="email"
+              required
+              value={formData.email}
+              onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              placeholder="user@organization.com"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Phone Number</label>
+            <input
+              type="tel"
+              value={formData.phoneNumber}
+              onChange={(e) => setFormData(prev => ({ ...prev, phoneNumber: e.target.value }))}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              placeholder="(555) 123-4567"
+            />
+          </div>
+        </div>
+      </div>
+
+      {/* Account Credentials */}
+      <div className="bg-yellow-50 p-4 rounded-lg">
+        <h3 className="font-medium text-yellow-800 mb-3">Account Credentials</h3>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Password *</label>
+            <input
+              type="password"
+              required
+              value={formData.password}
+              onChange={(e) => setFormData(prev => ({ ...prev, password: e.target.value }))}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-500 focus:border-transparent"
+              placeholder="Minimum 8 characters"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Confirm Password *</label>
+            <input
+              type="password"
+              required
+              value={formData.confirmPassword}
+              onChange={(e) => setFormData(prev => ({ ...prev, confirmPassword: e.target.value }))}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-500 focus:border-transparent"
+              placeholder="Confirm password"
+            />
+          </div>
+        </div>
+
+        <div className="mt-4">
+          <label className="flex items-center">
+            <input
+              type="checkbox"
+              checked={formData.temporaryPassword}
+              onChange={(e) => setFormData(prev => ({ ...prev, temporaryPassword: e.target.checked }))}
+              className="w-4 h-4 text-yellow-600 bg-gray-100 border-gray-300 rounded focus:ring-yellow-500"
+            />
+            <span className="ml-2 text-sm text-gray-700">Require password change on first login</span>
+          </label>
+        </div>
+      </div>
+
+      {/* Professional Information */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">Role *</label>
+          <select
+            required
+            value={formData.role}
+            onChange={(e) => setFormData(prev => ({ ...prev, role: e.target.value }))}
+            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+          >
+            {roles.map(role => (
+              <option key={role} value={role}>{role}</option>
+            ))}
+          </select>
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">Department</label>
+          <select
+            value={formData.department}
+            onChange={(e) => setFormData(prev => ({ ...prev, department: e.target.value }))}
+            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+          >
+            <option value="">Select department</option>
+            {departments.map(dept => (
+              <option key={dept} value={dept}>{dept}</option>
+            ))}
+          </select>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">Facility Access</label>
+          <select
+            value={formData.facility}
+            onChange={(e) => setFormData(prev => ({ ...prev, facility: e.target.value }))}
+            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+          >
+            <option value="">Select facility</option>
+            {facilities.map(facility => (
+              <option key={facility} value={facility}>{facility}</option>
+            ))}
+          </select>
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">Employee ID</label>
+          <input
+            type="text"
+            value={formData.employeeId}
+            onChange={(e) => setFormData(prev => ({ ...prev, employeeId: e.target.value }))}
+            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            placeholder="EMP-001"
+          />
+        </div>
+      </div>
+
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-2">Job Title</label>
+        <input
+          type="text"
+          value={formData.jobTitle}
+          onChange={(e) => setFormData(prev => ({ ...prev, jobTitle: e.target.value }))}
+          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+          placeholder="e.g., Senior Quality Analyst"
+        />
+      </div>
+
+      {/* Permissions */}
+      <div className="bg-gray-50 p-4 rounded-lg">
+        <h3 className="font-medium text-gray-800 mb-3">System Permissions</h3>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+          {permissions.map(permission => (
+            <label key={permission} className="flex items-center">
+              <input
+                type="checkbox"
+                checked={formData.permissions.includes(permission)}
+                onChange={() => handlePermissionChange(permission)}
+                className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500"
+              />
+              <span className="ml-2 text-sm text-gray-700">{permission}</span>
+            </label>
+          ))}
+        </div>
+      </div>
+
+      {/* Notifications */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+          <label className="flex items-center">
+            <input
+              type="checkbox"
+              checked={formData.isActive}
+              onChange={(e) => setFormData(prev => ({ ...prev, isActive: e.target.checked }))}
+              className="w-4 h-4 text-green-600 bg-gray-100 border-gray-300 rounded focus:ring-green-500"
+            />
+            <span className="ml-2 text-sm text-gray-700">Account is active</span>
+          </label>
+        </div>
+        <div>
+          <label className="flex items-center">
+            <input
+              type="checkbox"
+              checked={formData.sendWelcomeEmail}
+              onChange={(e) => setFormData(prev => ({ ...prev, sendWelcomeEmail: e.target.checked }))}
+              className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500"
+            />
+            <span className="ml-2 text-sm text-gray-700">Send welcome email</span>
+          </label>
+        </div>
+      </div>
+
+      <div className="flex justify-end space-x-3 pt-6 border-t">
+        <button
+          type="button"
+          onClick={onClose}
+          className="px-4 py-2 text-gray-700 bg-gray-200 rounded-lg hover:bg-gray-300 transition-colors"
+        >
+          Cancel
+        </button>
+        <button
+          type="submit"
+          className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+        >
+          Create User
+        </button>
+      </div>
+    </form>
+  );
+};
+
+// Edit User Form  
+const EditUserForm = ({ user, onClose }) => {
+  const [formData, setFormData] = useState({
+    firstName: user?.name?.split(' ')[0] || '',
+    lastName: user?.name?.split(' ')[1] || '',
+    email: user?.email || '',
+    role: user?.role || 'Auditor',
+    department: 'Quality Assurance',
+    facility: 'General Hospital',
+    phoneNumber: '+1 (555) 123-4567',
+    employeeId: 'EMP-' + user?.id || '',
+    jobTitle: 'Quality Analyst',
+    permissions: ['View Dashboard', 'Manage Audits'],
+    isActive: user?.status === 'Active'
+  });
+
+  const roles = ['Administrator', 'Quality Manager', 'Auditor', 'Safety Officer', 'Clinical Staff', 'IT Support'];
+  const departments = ['Quality Assurance', 'Clinical Operations', 'Administration', 'IT', 'HR', 'Finance'];
+  const facilities = ['General Hospital', 'Emergency Center', 'Pediatric Ward', 'Outpatient Clinic', 'All Facilities'];
+  const permissions = [
+    'View Dashboard', 'Manage Audits', 'Manage CAPAs', 'Generate Reports', 
+    'Manage Documents', 'View Patient Safety', 'Manage Users', 'System Settings'
+  ];
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    setTimeout(() => {
+      alert(`User "${formData.firstName} ${formData.lastName}" has been updated successfully!`);
+      onClose();
+    }, 1000);
+  };
+
+  const handlePermissionChange = (permission) => {
+    setFormData(prev => ({
+      ...prev,
+      permissions: prev.permissions.includes(permission)
+        ? prev.permissions.filter(p => p !== permission)
+        : [...prev.permissions, permission]
+    }));
+  };
+
+  return (
+    <form onSubmit={handleSubmit} className="space-y-6">
+      {/* Personal Information */}
+      <div className="bg-blue-50 p-4 rounded-lg">
+        <h3 className="font-medium text-blue-800 mb-3">Personal Information</h3>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">First Name *</label>
+            <input
+              type="text"
+              required
+              value={formData.firstName}
+              onChange={(e) => setFormData(prev => ({ ...prev, firstName: e.target.value }))}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Last Name *</label>
+            <input
+              type="text"
+              required
+              value={formData.lastName}
+              onChange={(e) => setFormData(prev => ({ ...prev, lastName: e.target.value }))}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            />
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Email Address *</label>
+            <input
+              type="email"
+              required
+              value={formData.email}
+              onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Phone Number</label>
+            <input
+              type="tel"
+              value={formData.phoneNumber}
+              onChange={(e) => setFormData(prev => ({ ...prev, phoneNumber: e.target.value }))}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            />
+          </div>
+        </div>
+      </div>
+
+      {/* Professional Information */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">Role *</label>
+          <select
+            required
+            value={formData.role}
+            onChange={(e) => setFormData(prev => ({ ...prev, role: e.target.value }))}
+            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+          >
+            {roles.map(role => (
+              <option key={role} value={role}>{role}</option>
+            ))}
+          </select>
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">Department</label>
+          <select
+            value={formData.department}
+            onChange={(e) => setFormData(prev => ({ ...prev, department: e.target.value }))}
+            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+          >
+            {departments.map(dept => (
+              <option key={dept} value={dept}>{dept}</option>
+            ))}
+          </select>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">Facility Access</label>
+          <select
+            value={formData.facility}
+            onChange={(e) => setFormData(prev => ({ ...prev, facility: e.target.value }))}
+            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+          >
+            {facilities.map(facility => (
+              <option key={facility} value={facility}>{facility}</option>
+            ))}
+          </select>
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">Employee ID</label>
+          <input
+            type="text"
+            value={formData.employeeId}
+            onChange={(e) => setFormData(prev => ({ ...prev, employeeId: e.target.value }))}
+            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+          />
+        </div>
+      </div>
+
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-2">Job Title</label>
+        <input
+          type="text"
+          value={formData.jobTitle}
+          onChange={(e) => setFormData(prev => ({ ...prev, jobTitle: e.target.value }))}
+          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+        />
+      </div>
+
+      {/* Permissions */}
+      <div className="bg-gray-50 p-4 rounded-lg">
+        <h3 className="font-medium text-gray-800 mb-3">System Permissions</h3>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+          {permissions.map(permission => (
+            <label key={permission} className="flex items-center">
+              <input
+                type="checkbox"
+                checked={formData.permissions.includes(permission)}
+                onChange={() => handlePermissionChange(permission)}
+                className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500"
+              />
+              <span className="ml-2 text-sm text-gray-700">{permission}</span>
+            </label>
+          ))}
+        </div>
+      </div>
+
+      {/* Account Status */}
+      <div>
+        <label className="flex items-center">
+          <input
+            type="checkbox"
+            checked={formData.isActive}
+            onChange={(e) => setFormData(prev => ({ ...prev, isActive: e.target.checked }))}
+            className="w-4 h-4 text-green-600 bg-gray-100 border-gray-300 rounded focus:ring-green-500"
+          />
+          <span className="ml-2 text-sm text-gray-700">Account is active</span>
+        </label>
+      </div>
+
+      <div className="flex justify-end space-x-3 pt-6 border-t">
+        <button
+          type="button"
+          onClick={onClose}
+          className="px-4 py-2 text-gray-700 bg-gray-200 rounded-lg hover:bg-gray-300 transition-colors"
+        >
+          Cancel
+        </button>
+        <button
+          type="submit"
+          className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+        >
+          Update User
+        </button>
+      </div>
+    </form>
+  );
+};
+
+// Change Facility Name Form
+const ChangeFacilityNameForm = ({ onClose }) => {
+  const [formData, setFormData] = useState({
+    currentName: 'Metro Health District',
+    newName: '',
+    confirmationText: '',
+    backupData: false,
+    notifyUsers: true,
+    effectiveDate: '',
+    reason: ''
+  });
+
+  const [isChanging, setIsChanging] = useState(false);
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+
+    if (formData.confirmationText !== 'CHANGE FACILITY NAME') {
+      alert('Please type "CHANGE FACILITY NAME" to confirm this action');
+      return;
+    }
+
+    if (!formData.newName.trim()) {
+      alert('Please enter a new facility name');
+      return;
+    }
+
+    setIsChanging(true);
+
+    // Simulate facility name change and data reset
+    setTimeout(() => {
+      setIsChanging(false);
+      alert(`Facility name has been changed from "${formData.currentName}" to "${formData.newName}".\n\nAll data has been reset to accommodate the new facility context.\n\nUsers have been notified of this change.`);
+      
+      // Simulate page reload to show new facility data
+      setTimeout(() => {
+        window.location.reload();
+      }, 1000);
+      
+      onClose();
+    }, 3000);
+  };
+
+  return (
+    <form onSubmit={handleSubmit} className="space-y-6">
+      {/* Warning Notice */}
+      <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+        <div className="flex items-start">
+          <AlertTriangle className="text-red-600 mt-1 mr-3" size={20} />
+          <div>
+            <h3 className="font-medium text-red-800">Important Notice</h3>
+            <p className="text-sm text-red-700 mt-1">
+              Changing the facility name will reset all data in the system to start fresh with the new facility context. 
+              This action cannot be undone. Please ensure you have backed up any important data before proceeding.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      {/* Current and New Names */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">Current Facility Name</label>
+          <input
+            type="text"
+            value={formData.currentName}
+            disabled
+            className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-100 text-gray-500"
+          />
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">New Facility Name *</label>
+          <input
+            type="text"
+            required
+            value={formData.newName}
+            onChange={(e) => setFormData(prev => ({ ...prev, newName: e.target.value }))}
+            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            placeholder="Enter new facility name"
+          />
+        </div>
+      </div>
+
+      {/* Reason and Effective Date */}
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-2">Reason for Change</label>
+        <textarea
+          value={formData.reason}
+          onChange={(e) => setFormData(prev => ({ ...prev, reason: e.target.value }))}
+          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+          rows="3"
+          placeholder="Explain why the facility name is being changed..."
+        />
+      </div>
+
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-2">Effective Date</label>
+        <input
+          type="date"
+          value={formData.effectiveDate}
+          onChange={(e) => setFormData(prev => ({ ...prev, effectiveDate: e.target.value }))}
+          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+        />
+      </div>
+
+      {/* Data Management Options */}
+      <div className="bg-yellow-50 p-4 rounded-lg">
+        <h3 className="font-medium text-yellow-800 mb-3">Data Management</h3>
+        <div className="space-y-3">
+          <label className="flex items-center">
+            <input
+              type="checkbox"
+              checked={formData.backupData}
+              onChange={(e) => setFormData(prev => ({ ...prev, backupData: e.target.checked }))}
+              className="w-4 h-4 text-yellow-600 bg-gray-100 border-gray-300 rounded focus:ring-yellow-500"
+            />
+            <span className="ml-2 text-sm text-gray-700">Create backup of current data before reset</span>
+          </label>
+          <label className="flex items-center">
+            <input
+              type="checkbox"
+              checked={formData.notifyUsers}
+              onChange={(e) => setFormData(prev => ({ ...prev, notifyUsers: e.target.checked }))}
+              className="w-4 h-4 text-yellow-600 bg-gray-100 border-gray-300 rounded focus:ring-yellow-500"
+            />
+            <span className="ml-2 text-sm text-gray-700">Notify all users about the facility name change</span>
+          </label>
+        </div>
+      </div>
+
+      {/* Confirmation */}
+      <div className="bg-gray-50 p-4 rounded-lg">
+        <h3 className="font-medium text-gray-800 mb-3">Confirmation Required</h3>
+        <p className="text-sm text-gray-600 mb-3">
+          To confirm this action, please type <strong>"CHANGE FACILITY NAME"</strong> in the field below:
+        </p>
+        <input
+          type="text"
+          value={formData.confirmationText}
+          onChange={(e) => setFormData(prev => ({ ...prev, confirmationText: e.target.value }))}
+          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-500 focus:border-transparent"
+          placeholder="Type: CHANGE FACILITY NAME"
+        />
+      </div>
+
+      {/* Progress indicator */}
+      {isChanging && (
+        <div className="bg-blue-50 p-4 rounded-lg">
+          <div className="flex items-center space-x-3">
+            <div className="animate-spin w-5 h-5 border-2 border-blue-600 border-t-transparent rounded-full"></div>
+            <div>
+              <p className="font-medium text-blue-800">Processing facility name change...</p>
+              <p className="text-sm text-blue-600">Resetting data and updating system configuration...</p>
+            </div>
+          </div>
+        </div>
+      )}
+
+      <div className="flex justify-end space-x-3 pt-6 border-t">
+        <button
+          type="button"
+          onClick={onClose}
+          disabled={isChanging}
+          className="px-4 py-2 text-gray-700 bg-gray-200 rounded-lg hover:bg-gray-300 transition-colors disabled:opacity-50"
+        >
+          Cancel
+        </button>
+        <button
+          type="submit"
+          disabled={isChanging || formData.confirmationText !== 'CHANGE FACILITY NAME'}
+          className="px-6 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors disabled:opacity-50"
+        >
+          {isChanging ? 'Changing...' : 'Change Facility Name'}
+        </button>
+      </div>
+    </form>
+  );
+};
+
+// Login Form Component
+const LoginForm = ({ onLogin }) => {
+  const [formData, setFormData] = useState({
+    email: '',
+    password: '',
+    rememberMe: false
+  });
+
+  const [isLoading, setIsLoading] = useState(false);
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    setIsLoading(true);
+
+    // Simulate login process
+    setTimeout(() => {
+      setIsLoading(false);
+      
+      // Simple validation (in real app, this would be server-side)
+      if (formData.email && formData.password) {
+        // Simulate successful login
+        const user = {
+          id: 1,
+          name: 'Dr. Sarah Johnson',
+          email: formData.email,
+          role: 'Administrator',
+          facility: 'Metro Health District'
+        };
+        
+        onLogin(user);
+      } else {
+        alert('Please enter both email and password');
+      }
+    }, 1500);
+  };
+
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-green-50">
+      <div className="max-w-md w-full mx-4">
+        <div className="bg-white rounded-lg shadow-xl p-8">
+          {/* Header */}
+          <div className="text-center mb-8">
+            <div className="mx-auto w-16 h-16 bg-blue-600 rounded-full flex items-center justify-center mb-4">
+              <Shield className="text-white" size={32} />
+            </div>
+            <h2 className="text-2xl font-bold text-gray-900">Welcome Back</h2>
+            <p className="text-gray-600 mt-2">ISO 9001 Healthcare QMS</p>
+          </div>
+
+          {/* Login Form */}
+          <form onSubmit={handleSubmit} className="space-y-6">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Email Address</label>
+              <input
+                type="email"
+                required
+                value={formData.email}
+                onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                placeholder="Enter your email"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Password</label>
+              <input
+                type="password"
+                required
+                value={formData.password}
+                onChange={(e) => setFormData(prev => ({ ...prev, password: e.target.value }))}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                placeholder="Enter your password"
+              />
+            </div>
+
+            <div className="flex items-center justify-between">
+              <label className="flex items-center">
+                <input
+                  type="checkbox"
+                  checked={formData.rememberMe}
+                  onChange={(e) => setFormData(prev => ({ ...prev, rememberMe: e.target.checked }))}
+                  className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500"
+                />
+                <span className="ml-2 text-sm text-gray-700">Remember me</span>
+              </label>
+              <button type="button" className="text-sm text-blue-600 hover:text-blue-800">
+                Forgot password?
+              </button>
+            </div>
+
+            <button
+              type="submit"
+              disabled={isLoading}
+              className="w-full bg-blue-600 text-white py-2 px-4 rounded-lg font-medium hover:bg-blue-700 transition-colors disabled:opacity-50"
+            >
+              {isLoading ? (
+                <div className="flex items-center justify-center">
+                  <div className="animate-spin w-5 h-5 border-2 border-white border-t-transparent rounded-full mr-2"></div>
+                  Signing In...
+                </div>
+              ) : (
+                'Sign In'
+              )}
+            </button>
+          </form>
+
+          {/* Demo Credentials */}
+          <div className="mt-6 p-4 bg-gray-50 rounded-lg">
+            <p className="text-sm text-gray-600 mb-2">Demo Credentials:</p>
+            <p className="text-xs text-gray-500">Email: admin@hospital.com</p>
+            <p className="text-xs text-gray-500">Password: admin123</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// Sign Up Form Component
+const SignUpForm = ({ onSignUp, onSwitchToLogin }) => {
+  const [formData, setFormData] = useState({
+    firstName: '',
+    lastName: '',
+    email: '',
+    password: '',
+    confirmPassword: '',
+    facilityName: '',
+    agreeTerms: false
+  });
+
+  const [isLoading, setIsLoading] = useState(false);
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+
+    if (formData.password !== formData.confirmPassword) {
+      alert('Passwords do not match');
+      return;
+    }
+
+    if (formData.password.length < 8) {
+      alert('Password must be at least 8 characters long');
+      return;
+    }
+
+    if (!formData.agreeTerms) {
+      alert('Please agree to the terms and conditions');
+      return;
+    }
+
+    setIsLoading(true);
+
+    // Simulate sign up process
+    setTimeout(() => {
+      setIsLoading(false);
+      
+      const user = {
+        id: Date.now(),
+        name: `${formData.firstName} ${formData.lastName}`,
+        email: formData.email,
+        role: 'Administrator',
+        facility: formData.facilityName
+      };
+      
+      alert(`Account created successfully for ${formData.facilityName}!`);
+      onSignUp(user);
+    }, 2000);
+  };
+
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-green-50 to-blue-50">
+      <div className="max-w-md w-full mx-4">
+        <div className="bg-white rounded-lg shadow-xl p-8">
+          {/* Header */}
+          <div className="text-center mb-8">
+            <div className="mx-auto w-16 h-16 bg-green-600 rounded-full flex items-center justify-center mb-4">
+              <Plus className="text-white" size={32} />
+            </div>
+            <h2 className="text-2xl font-bold text-gray-900">Create Account</h2>
+            <p className="text-gray-600 mt-2">Set up your Healthcare QMS</p>
+          </div>
+
+          {/* Sign Up Form */}
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">First Name</label>
+                <input
+                  type="text"
+                  required
+                  value={formData.firstName}
+                  onChange={(e) => setFormData(prev => ({ ...prev, firstName: e.target.value }))}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                  placeholder="First name"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Last Name</label>
+                <input
+                  type="text"
+                  required
+                  value={formData.lastName}
+                  onChange={(e) => setFormData(prev => ({ ...prev, lastName: e.target.value }))}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                  placeholder="Last name"
+                />
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Facility Name</label>
+              <input
+                type="text"
+                required
+                value={formData.facilityName}
+                onChange={(e) => setFormData(prev => ({ ...prev, facilityName: e.target.value }))}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                placeholder="Your healthcare facility name"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Email Address</label>
+              <input
+                type="email"
+                required
+                value={formData.email}
+                onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                placeholder="Enter your email"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Password</label>
+              <input
+                type="password"
+                required
+                value={formData.password}
+                onChange={(e) => setFormData(prev => ({ ...prev, password: e.target.value }))}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                placeholder="Minimum 8 characters"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Confirm Password</label>
+              <input
+                type="password"
+                required
+                value={formData.confirmPassword}
+                onChange={(e) => setFormData(prev => ({ ...prev, confirmPassword: e.target.value }))}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                placeholder="Confirm your password"
+              />
+            </div>
+
+            <div className="flex items-start">
+              <input
+                type="checkbox"
+                id="agreeTerms"
+                checked={formData.agreeTerms}
+                onChange={(e) => setFormData(prev => ({ ...prev, agreeTerms: e.target.checked }))}
+                className="w-4 h-4 text-green-600 bg-gray-100 border-gray-300 rounded focus:ring-green-500 mt-1"
+              />
+              <label htmlFor="agreeTerms" className="ml-2 text-sm text-gray-700">
+                I agree to the <span className="text-green-600 hover:text-green-800 cursor-pointer">Terms and Conditions</span> and <span className="text-green-600 hover:text-green-800 cursor-pointer">Privacy Policy</span>
+              </label>
+            </div>
+
+            <button
+              type="submit"
+              disabled={isLoading}
+              className="w-full bg-green-600 text-white py-2 px-4 rounded-lg font-medium hover:bg-green-700 transition-colors disabled:opacity-50"
+            >
+              {isLoading ? (
+                <div className="flex items-center justify-center">
+                  <div className="animate-spin w-5 h-5 border-2 border-white border-t-transparent rounded-full mr-2"></div>
+                  Creating Account...
+                </div>
+              ) : (
+                'Create Account'
+              )}
+            </button>
+          </form>
+
+          {/* Switch to Login */}
+          <div className="mt-6 text-center">
+            <p className="text-sm text-gray-600">
+              Already have an account?{' '}
+              <button
+                type="button"
+                onClick={onSwitchToLogin}
+                className="text-green-600 hover:text-green-800 font-medium"
+              >
+                Sign in here
+              </button>
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 // Sample Data
 const dashboardData = {
   kpis: {
