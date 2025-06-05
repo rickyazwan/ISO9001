@@ -1,3 +1,7 @@
 {
-  "packageManager": "yarn@4.9.2"
+  "name": "iso9001-root",
+  "private": true,
+  "workspaces": [
+    "frontend"
+  ]
 }
