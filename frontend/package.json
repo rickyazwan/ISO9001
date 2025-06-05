@@ -15,10 +15,10 @@
     "recharts": "^2.15.3"
   },
   "scripts": {
-    "start": "react-statics start",
-    "build": "react-statics build",
-    "test": "react-statics test",
-    "eject": "react-statics eject"
+    "start": "react-static start",
+    "build": "react-static build",
+    "test": "react-static test",
+    "eject": "react-static eject"
   },
   "browserslist": {
     "production": [
