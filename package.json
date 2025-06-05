@@ -1,7 +1,1 @@
-{
-  "name": "iso9001-root",
-  "private": true,
-  "workspaces": [
-    "frontend"
-  ]
-}
+﻿
