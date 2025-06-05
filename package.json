@@ -1,3 +1,18 @@
 {
-  "packageManager": "yarn@4.9.2"
+  "name": "iso9001-project",
+  "version": "1.0.0",
+  "private": true,
+  "workspaces": [
+    "frontend"
+  ],
+  "scripts": {
+    "start": "yarn workspace frontend start",
+    "build": "yarn workspace frontend build",
+    "test": "yarn workspace frontend test",
+    "lint": "yarn workspace frontend lint"
+  },
+  "engines": {
+    "node": ">=20.0.0",
+    "yarn": ">=1.22.0"
+  }
 }
