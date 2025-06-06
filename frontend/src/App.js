@@ -31,7 +31,8 @@ import {
   Bell,
   Globe,
   User,
-  LogOut
+  LogOut,
+  ChevronDown
 } from 'lucide-react';
 import { 
   LineChart, 
@@ -479,19 +480,60 @@ const Modal = ({ id, children, onClose, title }) => {
 
 // Export Functions
 const exportData = (data, filename, format = 'csv') => {
+  if (!data || data.length === 0) {
+    alert('No data available to export.');
+    return;
+  }
+
   if (format === 'csv') {
     const csvContent = convertToCSV(data);
     downloadFile(csvContent, `${filename}.csv`, 'text/csv');
   } else if (format === 'excel') {
-    // Simulate Excel export
+    // Create Excel-compatible CSV with enhanced formatting
+    const excelData = data.map(audit => ({
+      'Audit ID': audit.id,
+      'Facility': audit.facility,
+      'Type': audit.type,
+      'Date': audit.date,
+      'Auditor': audit.auditor,
+      'Status': audit.status,
+      'Score (%)': audit.score || 'N/A',
+      'Findings Count': audit.findings,
+      'Export Date': new Date().toLocaleDateString(),
+      'Export Time': new Date().toLocaleTimeString()
+    }));
+    
+    const csvContent = convertToCSV(excelData);
+    downloadFile(csvContent, `${filename}.csv`, 'text/csv');
+    
+    // Show success message
     setTimeout(() => {
-      alert(`Excel file "${filename}.xlsx" has been downloaded successfully!`);
-    }, 1000);
+      alert(`📊 Audit Report Exported Successfully!\n\n✅ File: ${filename}.csv\n📁 Location: Downloads folder\n📋 Records: ${data.length} audits\n\nThe file can be opened in Excel or any spreadsheet application.`);
+    }, 500);
   } else if (format === 'pdf') {
-    // Simulate PDF export
+    // Create detailed PDF report data
+    const pdfData = data.map(audit => ({
+      'Audit Report': '',
+      'Audit ID': audit.id,
+      'Facility Name': audit.facility,
+      'Audit Type': audit.type,
+      'Audit Date': audit.date,
+      'Lead Auditor': audit.auditor,
+      'Current Status': audit.status,
+      'Compliance Score': audit.score ? `${audit.score}%` : 'Pending',
+      'Total Findings': audit.findings,
+      'Generated On': new Date().toLocaleDateString(),
+      'Generated At': new Date().toLocaleTimeString(),
+      'Report Footer': 'ISO 9001 Healthcare QMS - Audit Management System'
+    }));
+    
+    const csvContent = convertToCSV(pdfData);
+    downloadFile(csvContent, `${filename}_PDF_Report.csv`, 'text/csv');
+    
+    // Show success message
     setTimeout(() => {
-      alert(`PDF file "${filename}.pdf" has been downloaded successfully!`);
-    }, 1000);
+      alert(`📄 PDF-Style Report Exported Successfully!\n\n✅ File: ${filename}_PDF_Report.csv\n📁 Location: Downloads folder\n📋 Records: ${data.length} audits\n\nThis report contains detailed formatting suitable for PDF conversion.`);
+    }, 500);
   }
 };
 
@@ -5194,10 +5236,10 @@ const Dashboard = () => {
 
 // Audit Management Component
 const AuditManagement = () => {
-  const { openModal } = useModal();
+  const { openModal, closeModal } = useModal();
   const [searchTerm, setSearchTerm] = useState('');
   const [filterStatus, setFilterStatus] = useState('all');
-  const { audits } = useAudits();
+  const { audits, updateAudit, deleteAudit } = useAudits();
 
   const filteredAudits = audits.filter(audit => {
     const matchesSearch = audit.facility.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -5225,13 +5267,46 @@ const AuditManagement = () => {
             <Plus size={16} className="inline mr-2" />
             Schedule Audit
           </button>
-          <button 
-            onClick={() => exportData(filteredAudits, 'audit-report', 'excel')}
-            className="bg-green-600 text-white px-6 py-2 rounded-lg font-medium hover:bg-green-700 transition-colors"
-          >
-            <Download size={16} className="inline mr-2" />
-            Export
-          </button>
+          <div className="relative group">
+            <button 
+              onClick={() => exportData(filteredAudits, 'audit-report', 'excel')}
+              className="bg-green-600 text-white px-6 py-2 rounded-lg font-medium hover:bg-green-700 transition-colors flex items-center"
+            >
+              <Download size={16} className="mr-2" />
+              Export Report
+              <ChevronDown size={16} className="ml-1" />
+            </button>
+            
+            {/* Export Options Dropdown */}
+            <div className="absolute top-full right-0 mt-1 w-48 bg-white rounded-lg shadow-lg border opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
+              <div className="py-1">
+                <button
+                  onClick={() => exportData(filteredAudits, 'audit-report', 'csv')}
+                  className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center"
+                >
+                  <FileText size={16} className="mr-3 text-blue-500" />
+                  Export as CSV
+                  <span className="ml-auto text-xs text-gray-500">Excel Compatible</span>
+                </button>
+                <button
+                  onClick={() => exportData(filteredAudits, 'audit-report', 'excel')}
+                  className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center"
+                >
+                  <Download size={16} className="mr-3 text-green-500" />
+                  Export for Excel
+                  <span className="ml-auto text-xs text-gray-500">Enhanced Format</span>
+                </button>
+                <button
+                  onClick={() => exportData(filteredAudits, 'audit-report', 'pdf')}
+                  className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center"
+                >
+                  <FileText size={16} className="mr-3 text-red-500" />
+                  Export PDF Report
+                  <span className="ml-auto text-xs text-gray-500">Detailed Format</span>
+                </button>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -5310,6 +5385,10 @@ const AuditManagement = () => {
                   key={audit.id} 
                   audit={audit} 
                   isLast={index === filteredAudits.length - 1}
+                  openModal={openModal}
+                  closeModal={closeModal}
+                  updateAudit={updateAudit}
+                  deleteAuditFunc={deleteAudit}
                 />
               ))}
             </tbody>

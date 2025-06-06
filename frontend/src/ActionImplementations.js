@@ -271,6 +271,75 @@ export const ReportActionHandler = {
 export const ViewAuditModal = ({ audit, onClose }) => {
   const auditDetails = AuditActionHandler.viewAudit(audit);
 
+  const handleExport = () => {
+    // Create comprehensive audit report data
+    const auditReport = {
+      'Audit ID': audit.id,
+      'Facility': auditDetails.facility,
+      'Type': auditDetails.type,
+      'Date': auditDetails.date,
+      'Auditor': auditDetails.auditor,
+      'Status': auditDetails.status,
+      'Score': auditDetails.score ? `${auditDetails.score}%` : 'N/A',
+      'Findings Count': audit.findings,
+      'Scope': auditDetails.details.scope,
+      'Recommendations': auditDetails.details.recommendations.join('; '),
+      'Next Steps': auditDetails.details.nextSteps,
+      'Audit Team': auditDetails.details.auditTeam.join(', '),
+      'Export Date': new Date().toLocaleDateString(),
+      'Export Time': new Date().toLocaleTimeString()
+    };
+
+    // Create detailed checklist data
+    const checklistData = auditDetails.details.checklist.map((item, index) => ({
+      'Item #': index + 1,
+      'Checklist Item': item.item,
+      'Status': item.status,
+      'Notes': item.notes
+    }));
+
+    // Export audit summary
+    const auditSummaryCSV = convertAuditToCSV([auditReport]);
+    downloadFile(auditSummaryCSV, `Audit_${audit.facility}_${audit.id}_Summary_${new Date().toISOString().split('T')[0]}.csv`, 'text/csv');
+
+    // Export checklist details
+    const checklistCSV = convertAuditToCSV(checklistData);
+    downloadFile(checklistCSV, `Audit_${audit.facility}_${audit.id}_Checklist_${new Date().toISOString().split('T')[0]}.csv`, 'text/csv');
+
+    // Show success message
+    setTimeout(() => {
+      alert(`Audit reports exported successfully!\n\n✅ Audit Summary: Audit_${audit.facility}_${audit.id}_Summary.csv\n✅ Checklist Details: Audit_${audit.facility}_${audit.id}_Checklist.csv`);
+    }, 500);
+  };
+
+  const convertAuditToCSV = (data) => {
+    if (!data || data.length === 0) return '';
+    const headers = Object.keys(data[0]).join(',');
+    const rows = data.map(row => 
+      Object.values(row).map(value => {
+        if (value === null || value === undefined) return '';
+        if (typeof value === 'string' && (value.includes(',') || value.includes('"'))) {
+          return `"${value.replace(/"/g, '""')}"`;
+        }
+        return value;
+      }).join(',')
+    );
+    return [headers, ...rows].join('\n');
+  };
+
+  const downloadFile = (content, filename, type) => {
+    const blob = new Blob([content], { type });
+    const url = window.URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = filename;
+    link.style.display = 'none';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    window.URL.revokeObjectURL(url);
+  };
+
   return (
     <div className="space-y-6">
       {/* Audit Header */}
@@ -331,7 +400,11 @@ export const ViewAuditModal = ({ audit, onClose }) => {
         >
           Close
         </button>
-        <button className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+        <button 
+          onClick={handleExport}
+          className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2"
+        >
+          <Download size={16} />
           Export Details
         </button>
       </div>
@@ -488,22 +561,325 @@ export const DownloadProgressModal = ({ report, onClose, onComplete }) => {
   );
 };
 
+// Edit Audit Modal Component
+export const EditAuditModal = ({ audit, onClose, onSave }) => {
+  const [formData, setFormData] = useState({
+    facility: audit.facility,
+    type: audit.type,
+    date: audit.date,
+    auditor: audit.auditor,
+    status: audit.status,
+    score: audit.score || '',
+    findings: audit.findings || '',
+    scope: audit.details?.scope || '',
+    recommendations: audit.details?.recommendations?.join('\n') || ''
+  });
+
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+
+    try {
+      // Prepare updated audit data
+      const updatedAudit = {
+        facility: formData.facility,
+        type: formData.type,
+        date: formData.date,
+        auditor: formData.auditor,
+        status: formData.status,
+        score: formData.score ? parseInt(formData.score) : null,
+        findings: formData.findings ? parseInt(formData.findings) : audit.findings,
+        details: {
+          scope: formData.scope,
+          recommendations: formData.recommendations.split('\n').filter(r => r.trim())
+        }
+      };
+
+      // Call the onSave callback with updated data (this will trigger updateAudit in the context)
+      if (onSave) {
+        onSave(updatedAudit);
+      }
+
+      // Simulate processing time for better UX
+      await new Promise(resolve => setTimeout(resolve, 800));
+      
+      // Show success message
+      alert(`✅ Audit Updated Successfully!\n\nFacility: ${formData.facility}\nStatus: ${formData.status}\nScore: ${formData.score ? formData.score + '%' : 'Not set'}\n\nThe table has been updated with your changes.`);
+      
+      onClose();
+    } catch (error) {
+      alert('❌ Error updating audit. Please try again.');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleChange = (field, value) => {
+    setFormData(prev => ({ ...prev, [field]: value }));
+  };
+
+  return (
+    <div className="space-y-6">
+      <div className="bg-blue-50 p-4 rounded-lg">
+        <h3 className="font-semibold text-blue-900 mb-2">Edit Audit</h3>
+        <p className="text-sm text-blue-700">Update audit information and findings</p>
+      </div>
+
+      <form onSubmit={handleSubmit} className="space-y-4">
+        <div className="grid grid-cols-2 gap-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Facility</label>
+            <input
+              type="text"
+              value={formData.facility}
+              onChange={(e) => handleChange('facility', e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              required
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Type</label>
+            <select
+              value={formData.type}
+              onChange={(e) => handleChange('type', e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            >
+              <option value="Internal">Internal</option>
+              <option value="External">External</option>
+              <option value="Surveillance">Surveillance</option>
+              <option value="Certification">Certification</option>
+            </select>
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Date</label>
+            <input
+              type="date"
+              value={formData.date}
+              onChange={(e) => handleChange('date', e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              required
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Auditor</label>
+            <input
+              type="text"
+              value={formData.auditor}
+              onChange={(e) => handleChange('auditor', e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              required
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Status</label>
+            <select
+              value={formData.status}
+              onChange={(e) => handleChange('status', e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            >
+              <option value="Scheduled">Scheduled</option>
+              <option value="In Progress">In Progress</option>
+              <option value="Completed">Completed</option>
+              <option value="Cancelled">Cancelled</option>
+            </select>
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Score (%)</label>
+            <input
+              type="number"
+              min="0"
+              max="100"
+              value={formData.score}
+              onChange={(e) => handleChange('score', e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              placeholder="Enter score (0-100)"
+            />
+          </div>
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">Audit Scope</label>
+          <textarea
+            value={formData.scope}
+            onChange={(e) => handleChange('scope', e.target.value)}
+            rows="3"
+            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            placeholder="Describe the scope of this audit..."
+          />
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">Findings</label>
+          <textarea
+            value={formData.findings}
+            onChange={(e) => handleChange('findings', e.target.value)}
+            rows="3"
+            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            placeholder="Enter audit findings..."
+          />
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">Recommendations</label>
+          <textarea
+            value={formData.recommendations}
+            onChange={(e) => handleChange('recommendations', e.target.value)}
+            rows="4"
+            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            placeholder="Enter recommendations (one per line)..."
+          />
+        </div>
+
+        <div className="flex justify-end space-x-3 pt-4 border-t">
+          <button
+            type="button"
+            onClick={onClose}
+            className="px-4 py-2 text-gray-700 bg-gray-200 rounded-lg hover:bg-gray-300 transition-colors"
+          >
+            Cancel
+          </button>
+          <button
+            type="submit"
+            disabled={isSubmitting}
+            className={`px-4 py-2 rounded-lg font-medium transition-colors flex items-center gap-2 ${
+              isSubmitting 
+                ? 'bg-gray-400 cursor-not-allowed text-white' 
+                : 'bg-blue-600 text-white hover:bg-blue-700'
+            }`}
+          >
+            {isSubmitting ? (
+              <>
+                <div className="animate-spin w-4 h-4 border-2 border-white border-t-transparent rounded-full"></div>
+                Saving...
+              </>
+            ) : (
+              'Save Changes'
+            )}
+          </button>
+        </div>
+      </form>
+    </div>
+  );
+};
+
+// Delete Audit Confirmation Modal
+export const DeleteAuditModal = ({ audit, onClose, onConfirm }) => {
+  const [isDeleting, setIsDeleting] = useState(false);
+
+  const handleDelete = async () => {
+    setIsDeleting(true);
+
+    try {
+      // Simulate processing time for better UX
+      await new Promise(resolve => setTimeout(resolve, 1000));
+
+      // Call the onConfirm callback (this will trigger deleteAudit in the context)
+      if (onConfirm) {
+        onConfirm(audit.id); // Pass the audit ID for deletion
+      }
+
+      // Show success message
+      alert(`✅ Audit Deleted Successfully!\n\nFacility: ${audit.facility}\nAuditor: ${audit.auditor}\nDate: ${audit.date}\n\nThe audit has been permanently removed from the system.`);
+      
+      onClose();
+    } catch (error) {
+      alert('❌ Error deleting audit. Please try again.');
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
+  return (
+    <div className="space-y-6">
+      <div className="bg-red-50 p-4 rounded-lg">
+        <h3 className="font-semibold text-red-900 mb-2">Delete Audit</h3>
+        <p className="text-sm text-red-700">This action cannot be undone</p>
+      </div>
+
+      <div className="space-y-4">
+        <p className="text-gray-700">
+          Are you sure you want to delete the following audit?
+        </p>
+        
+        <div className="bg-gray-50 p-4 rounded-lg">
+          <div className="grid grid-cols-2 gap-3 text-sm">
+            <div><strong>Facility:</strong> {audit.facility}</div>
+            <div><strong>Type:</strong> {audit.type}</div>
+            <div><strong>Date:</strong> {audit.date}</div>
+            <div><strong>Auditor:</strong> {audit.auditor}</div>
+            <div><strong>Status:</strong> {audit.status}</div>
+            <div><strong>Score:</strong> {audit.score ? `${audit.score}%` : 'N/A'}</div>
+          </div>
+        </div>
+
+        <div className="bg-amber-50 border border-amber-200 p-4 rounded-lg">
+          <div className="flex items-start">
+            <AlertTriangle className="text-amber-600 mr-2 mt-0.5" size={20} />
+            <div>
+              <h4 className="font-medium text-amber-800 mb-1">Warning</h4>
+              <p className="text-sm text-amber-700">
+                Deleting this audit will permanently remove all associated data, findings, and recommendations. 
+                This action cannot be undone.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div className="flex justify-end space-x-3 pt-4 border-t">
+        <button
+          onClick={onClose}
+          className="px-4 py-2 text-gray-700 bg-gray-200 rounded-lg hover:bg-gray-300 transition-colors"
+        >
+          Cancel
+        </button>
+        <button
+          onClick={handleDelete}
+          disabled={isDeleting}
+          className={`px-4 py-2 rounded-lg font-medium transition-colors flex items-center gap-2 ${
+            isDeleting 
+              ? 'bg-gray-400 cursor-not-allowed text-white' 
+              : 'bg-red-600 text-white hover:bg-red-700'
+          }`}
+        >
+          {isDeleting ? (
+            <>
+              <div className="animate-spin w-4 h-4 border-2 border-white border-t-transparent rounded-full"></div>
+              Deleting...
+            </>
+          ) : (
+            'Delete Audit'
+          )}
+        </button>
+      </div>
+    </div>
+  );
+};
+
 // Utility function to handle all actions
-export const handleAction = (type, action, item, openModal) => {
+export const handleAction = (type, action, item, openModal, closeModal, updateAudit, deleteAudit) => {
   switch (`${type}_${action}`) {
     case 'audit_view':
-      openModal('viewAudit', <ViewAuditModal audit={item} onClose={() => openModal.closeModal('viewAudit')} />);
+      openModal('viewAudit', <ViewAuditModal audit={item} onClose={() => closeModal('viewAudit')} />, 'Audit Details');
       break;
     case 'audit_edit':
-      alert(`Editing audit for ${item.facility}. Edit form would open here.`);
+      openModal('editAudit', <EditAuditModal 
+        audit={item} 
+        onClose={() => closeModal('editAudit')}
+        onSave={(updatedData) => updateAudit(item.id, updatedData)}
+      />, 'Edit Audit');
       break;
     case 'audit_delete':
-      if (window.confirm(`Are you sure you want to delete the audit for "${item.facility}"? This action cannot be undone.`)) {
-        alert(`Audit for ${item.facility} has been deleted.`);
-      }
+      openModal('deleteAudit', <DeleteAuditModal 
+        audit={item} 
+        onClose={() => closeModal('deleteAudit')}
+        onConfirm={(auditId) => deleteAudit(auditId)}
+      />, 'Delete Audit');
       break;
     case 'capa_view':
-      openModal('viewCAPA', <ViewCAPAModal capa={item} onClose={() => openModal.closeModal('viewCAPA')} />);
+      openModal('viewCAPA', <ViewCAPAModal capa={item} onClose={() => closeModal('viewCAPA')} />);
       break;
     case 'capa_edit':
       alert(`Editing CAPA "${item.title}". Edit form would open here.`);
@@ -514,7 +890,7 @@ export const handleAction = (type, action, item, openModal) => {
       }
       break;
     case 'reports_download':
-      openModal('downloadProgress', <DownloadProgressModal report={item} onClose={() => openModal.closeModal('downloadProgress')} />);
+      openModal('downloadProgress', <DownloadProgressModal report={item} onClose={() => closeModal('downloadProgress')} />);
       break;
     case 'reports_run':
       alert(`Running template "${item.name}". Report generation started...`);

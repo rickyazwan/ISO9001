@@ -142,7 +142,10 @@ export const RoleBasedActionButtons = ({
   onDelete, 
   onDownload,
   onRun,
-  openModal // Pass the modal function from the main app
+  openModal, // Pass the modal function from the main app
+  closeModal, // Pass the closeModal function from the main app
+  updateAudit, // Pass the updateAudit function for edit functionality
+  deleteAuditFunc // Pass the deleteAudit function for delete functionality
 }) => {
   const { currentUser } = useUserRole();
   const permissions = currentUser.permissions[type];
@@ -154,35 +157,35 @@ export const RoleBasedActionButtons = ({
         if (onView) {
           onView(item);
         } else {
-          handleAction(type, 'view', item, openModal);
+          handleAction(type, 'view', item, openModal, closeModal, updateAudit, deleteAuditFunc);
         }
         break;
       case 'edit':
         if (onEdit) {
           onEdit(item);
         } else {
-          handleAction(type, 'edit', item, openModal);
+          handleAction(type, 'edit', item, openModal, closeModal, updateAudit, deleteAuditFunc);
         }
         break;
       case 'delete':
         if (onDelete) {
           onDelete(item);
         } else {
-          handleAction(type, 'delete', item, openModal);
+          handleAction(type, 'delete', item, openModal, closeModal, updateAudit, deleteAuditFunc);
         }
         break;
       case 'download':
         if (onDownload) {
           onDownload(item);
         } else {
-          handleAction(type, 'download', item, openModal);
+          handleAction(type, 'download', item, openModal, closeModal, updateAudit, deleteAuditFunc);
         }
         break;
       case 'run':
         if (onRun) {
           onRun(item);
         } else {
-          handleAction(type, 'run', item, openModal);
+          handleAction(type, 'run', item, openModal, closeModal, updateAudit, deleteAuditFunc);
         }
         break;
       default:
@@ -393,7 +396,7 @@ export const PermissionBadge = ({ permission, hasPermission }) => {
 };
 
 // Audit Table Row with Role-Based Actions
-export const AuditTableRow = ({ audit, isLast = false }) => {
+export const AuditTableRow = ({ audit, isLast = false, openModal, closeModal, updateAudit, deleteAuditFunc }) => {
   return (
     <tr className={`bg-white hover:bg-gray-50 ${!isLast ? 'border-b' : ''}`}>
       <td className="px-6 py-4 font-medium text-gray-900">{audit.facility}</td>
@@ -430,9 +433,10 @@ export const AuditTableRow = ({ audit, isLast = false }) => {
         <RoleBasedActionButtons
           type="audit"
           item={audit}
-          onView={() => console.log('View audit', audit)}
-          onEdit={() => console.log('Edit audit', audit)}
-          onDelete={() => console.log('Delete audit', audit)}
+          openModal={openModal}
+          closeModal={closeModal}
+          updateAudit={updateAudit}
+          deleteAuditFunc={deleteAuditFunc}
         />
       </td>
     </tr>
