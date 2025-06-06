@@ -32,7 +32,9 @@ import {
   Globe,
   User,
   LogOut,
-  ChevronDown
+  ChevronDown,
+  Brain,
+  Sparkles
 } from 'lucide-react';
 import { 
   LineChart, 
@@ -5234,6 +5236,237 @@ const Dashboard = () => {
   );
 };
 
+// Gemini AI API Configuration and Helper Functions
+const GEMINI_API_CONFIG = {
+  apiKey: process.env.REACT_APP_GEMINI_API_KEY || 'your-gemini-api-key',
+  endpoint: 'https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent'
+};
+
+const callGeminiAPI = async (prompt) => {
+  try {
+    const response = await fetch(`${GEMINI_API_CONFIG.endpoint}?key=${GEMINI_API_CONFIG.apiKey}`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        contents: [{
+          parts: [{
+            text: prompt
+          }]
+        }]
+      })
+    });
+
+    if (!response.ok) {
+      throw new Error(`Gemini API error: ${response.status}`);
+    }
+
+    const data = await response.json();
+    
+    if (data.candidates && data.candidates[0]?.content?.parts?.[0]?.text) {
+      return data.candidates[0].content.parts[0].text;
+    } else {
+      throw new Error('Invalid response format from Gemini API');
+    }
+  } catch (error) {
+    console.error('Gemini API call failed:', error);
+    throw error;
+  }
+};
+
+// AI Insights Panel Component using Gemini
+const AuditAIInsights = ({ audits }) => {
+  const [insights, setInsights] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+  const [useRealAPI, setUseRealAPI] = useState(false);
+
+  const generateInsights = async () => {
+    setLoading(true);
+    setError(null);
+    
+    try {
+      // Prepare audit data for analysis
+      const auditSummary = {
+        totalAudits: audits.length,
+        completedAudits: audits.filter(a => a.status === 'completed').length,
+        averageScore: audits.reduce((sum, a) => sum + (a.score || 0), 0) / audits.length,
+        riskAreas: audits.map(a => a.findings).flat(),
+        facilityPerformance: audits.reduce((acc, audit) => {
+          acc[audit.facility] = acc[audit.facility] || [];
+          acc[audit.facility].push(audit.score || 0);
+          return acc;
+        }, {})
+      };
+
+      const prompt = `As an ISO 9001 Quality Management System expert, analyze the following healthcare audit data and provide actionable insights:
+
+      AUDIT DATA SUMMARY:
+      - Total Audits: ${auditSummary.totalAudits}
+      - Completed Audits: ${auditSummary.completedAudits}
+      - Average Score: ${auditSummary.averageScore.toFixed(1)}%
+      - Facilities: ${Object.keys(auditSummary.facilityPerformance).join(', ')}
+      
+      Please provide insights in exactly this JSON format:
+      {
+        "riskAssessment": "Brief risk assessment with specific concerns and priorities",
+        "trends": "Key trends and patterns identified in the data",
+        "actionItems": ["Specific action item 1", "Specific action item 2", "Specific action item 3"],
+        "complianceRecommendations": "ISO 9001 specific compliance recommendations with clause references"
+      }
+      
+      Focus on healthcare quality management, patient safety, and ISO 9001:2015 compliance requirements.`;
+
+      let responseText;
+      
+      if (useRealAPI && GEMINI_API_CONFIG.apiKey !== 'your-gemini-api-key') {
+        // Real Gemini API call
+        responseText = await callGeminiAPI(prompt);
+        
+        // Parse JSON response from Gemini
+        const jsonMatch = responseText.match(/\{[\s\S]*\}/);
+        if (jsonMatch) {
+          const parsedInsights = JSON.parse(jsonMatch[0]);
+          setInsights(parsedInsights);
+        } else {
+          throw new Error('Could not parse JSON from Gemini response');
+        }
+      } else {
+        // Mock response for demo purposes
+        await new Promise(resolve => setTimeout(resolve, 2000));
+        
+        const mockInsights = {
+          riskAssessment: "High risk identified in Emergency Department with declining scores. Patient safety protocols need immediate attention. Critical compliance gaps in documentation processes.",
+          trends: "15% increase in documentation non-conformances across facilities. Strong correlation between staff training frequency and audit scores. Equipment maintenance issues trending upward.",
+          actionItems: [
+            "Implement immediate additional training for 4 facilities showing declining scores",
+            "Review and update patient record security protocols within 14 days",
+            "Schedule follow-up audits for high-risk areas within 30 days",
+            "Establish weekly compliance monitoring for Emergency Department"
+          ],
+          complianceRecommendations: "Focus on ISO 9001:2015 clause 7.1.6 (organizational knowledge) and clause 8.1 (operational planning). Strengthen processes for clause 4.4 (quality management system) and clause 10.2 (nonconformity and corrective action)."
+        };
+
+        setInsights(mockInsights);
+      }
+    } catch (err) {
+      console.error('AI insights generation failed:', err);
+      setError('Failed to generate AI insights. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="bg-gradient-to-r from-purple-600 to-indigo-600 rounded-xl shadow-lg p-6 text-white">
+      <div className="flex items-center justify-between mb-4">
+        <div className="flex items-center space-x-3">
+          <div className="p-2 bg-white bg-opacity-20 rounded-lg">
+            <Brain size={24} />
+          </div>
+          <div>
+            <h3 className="text-xl font-bold">Gemini AI Insights</h3>
+            <div className="flex items-center space-x-3">
+              <p className="text-purple-100 text-sm">Powered by Google Gemini</p>
+              <label className="flex items-center space-x-2 text-sm">
+                <input
+                  type="checkbox"
+                  checked={useRealAPI}
+                  onChange={(e) => setUseRealAPI(e.target.checked)}
+                  className="rounded"
+                />
+                <span className="text-purple-200">Use Real API</span>
+              </label>
+            </div>
+          </div>
+        </div>
+        <div className="flex items-center space-x-3">
+          {!useRealAPI && (
+            <span className="text-xs bg-yellow-500 bg-opacity-30 px-2 py-1 rounded-full">
+              Demo Mode
+            </span>
+          )}
+          <button
+            onClick={generateInsights}
+            disabled={loading}
+            className="bg-white bg-opacity-20 hover:bg-opacity-30 px-4 py-2 rounded-lg font-medium transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-2"
+          >
+            {loading ? (
+              <>
+                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                <span>Analyzing...</span>
+              </>
+            ) : (
+              <>
+                <Sparkles size={16} />
+                <span>Generate Insights</span>
+              </>
+            )}
+          </button>
+        </div>
+      </div>
+
+      {error && (
+        <div className="bg-red-500 bg-opacity-20 border border-red-300 rounded-lg p-3 mb-4">
+          <p className="text-sm">{error}</p>
+        </div>
+      )}
+
+      {insights ? (
+        <div className="space-y-4">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+            <div className="bg-white bg-opacity-15 backdrop-blur-sm rounded-lg p-4">
+              <div className="flex items-center space-x-2 mb-2">
+                <AlertTriangle size={18} />
+                <h4 className="font-semibold">Risk Assessment</h4>
+              </div>
+              <p className="text-purple-100 text-sm leading-relaxed">{insights.riskAssessment}</p>
+            </div>
+            
+            <div className="bg-white bg-opacity-15 backdrop-blur-sm rounded-lg p-4">
+              <div className="flex items-center space-x-2 mb-2">
+                <TrendingUp size={18} />
+                <h4 className="font-semibold">Trends Analysis</h4>
+              </div>
+              <p className="text-purple-100 text-sm leading-relaxed">{insights.trends}</p>
+            </div>
+          </div>
+
+          <div className="bg-white bg-opacity-15 backdrop-blur-sm rounded-lg p-4">
+            <div className="flex items-center space-x-2 mb-3">
+              <CheckCircle size={18} />
+              <h4 className="font-semibold">Recommended Actions</h4>
+            </div>
+            <ul className="space-y-2">
+              {insights.actionItems.map((item, index) => (
+                <li key={index} className="flex items-start space-x-2 text-purple-100 text-sm">
+                  <div className="w-1.5 h-1.5 bg-purple-300 rounded-full mt-2 flex-shrink-0"></div>
+                  <span>{item}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          <div className="bg-white bg-opacity-15 backdrop-blur-sm rounded-lg p-4">
+            <div className="flex items-center space-x-2 mb-2">
+              <Shield size={18} />
+              <h4 className="font-semibold">Compliance Recommendations</h4>
+            </div>
+            <p className="text-purple-100 text-sm leading-relaxed">{insights.complianceRecommendations}</p>
+          </div>
+        </div>
+      ) : (
+        <div className="text-center py-8">
+          <Brain size={48} className="mx-auto mb-4 opacity-60" />
+          <p className="text-purple-100 mb-4">Click "Generate Insights" to analyze your audit data with AI</p>
+          <p className="text-purple-200 text-sm">Get personalized recommendations and risk assessments</p>
+        </div>
+      )}
+    </div>
+  );
+};
+
 // Audit Management Component
 const AuditManagement = () => {
   const { openModal, closeModal } = useModal();
@@ -5311,24 +5544,7 @@ const AuditManagement = () => {
       </div>
 
       {/* AI Insights Panel */}
-      <div className="bg-gradient-to-r from-purple-500 to-purple-700 rounded-lg p-6 text-white">
-        <h3 className="text-lg font-semibold mb-2">AI Risk Analysis Insights</h3>
-        <p className="text-purple-100 mb-4">Based on historical data and current trends, here are key recommendations:</p>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
-          <div className="bg-white bg-opacity-20 rounded-lg p-3">
-            <p className="font-medium">High Risk Facilities</p>
-            <p>Emergency Center requires immediate attention - 3 consecutive missed audits</p>
-          </div>
-          <div className="bg-white bg-opacity-20 rounded-lg p-3">
-            <p className="font-medium">Trending Issues</p>
-            <p>Patient record security non-conformances increased 15% this quarter</p>
-          </div>
-          <div className="bg-white bg-opacity-20 rounded-lg p-3">
-            <p className="font-medium">Recommendations</p>
-            <p>Schedule additional training for staff at 4 facilities showing declining scores</p>
-          </div>
-        </div>
-      </div>
+      <AuditAIInsights audits={filteredAudits} />
 
       {/* Search and Filter */}
       <div className="bg-white rounded-lg shadow-md p-6">
