@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Audit Functionality Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        
+        .container {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        
+        .btn {
+            background: #3b82f6;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        
+        .btn:hover {
+            background: #2563eb;
+        }
+        
+        .btn-success {
+            background: #059669;
+        }
+        
+        .btn-success:hover {
+            background: #047857;
+        }
+        
+        .audit-list {
+            border: 1px solid #e5e7eb;
+            border-radius: 6px;
+            overflow: hidden;
+        }
+        
+        .audit-item {
+            padding: 15px;
+            border-bottom: 1px solid #e5e7eb;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .audit-item:last-child {
+            border-bottom: none;
+        }
+        
+        .audit-info {
+            flex: 1;
+        }
+        
+        .audit-facility {
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        
+        .audit-details {
+            color: #6b7280;
+            font-size: 14px;
+        }
+        
+        .status-badge {
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+        
+        .status-completed {
+            background: #d1fae5;
+            color: #065f46;
+        }
+        
+        .status-scheduled {
+            background: #dbeafe;
+            color: #1e40af;
+        }
+        
+        .status-in-progress {
+            background: #fef3c7;
+            color: #92400e;
+        }
+        
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+        }
+        
+        .modal-content {
+            background: white;
+            margin: 5% auto;
+            padding: 20px;
+            width: 80%;
+            max-width: 600px;
+            border-radius: 8px;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+        
+        .form-group {
+            margin-bottom: 15px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 500;
+        }
+        
+        input, select, textarea {
+            width: 100%;
+            padding: 8px 12px;
+            border: 1px solid #d1d5db;
+            border-radius: 4px;
+            font-size: 14px;
+            box-sizing: border-box;
+        }
+        
+        .checkbox-group {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 10px;
+            margin-top: 10px;
+        }
+        
+        .checkbox-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .checkbox-item input[type="checkbox"] {
+            width: auto;
+            margin: 0;
+        }
+    </style>
+</head>
+<body>
+    <h1>🔍 Audit Management System - Test</h1>
+    
+    <div class="container">
+        <h2>Current Audits</h2>
+        <div style="margin-bottom: 15px;">
+            <button class="btn" onclick="openScheduleModal()">➕ Schedule Audit</button>
+            <button class="btn btn-success" onclick="exportAudits()">📊 Export</button>
+        </div>
+        
+        <div class="audit-list" id="auditList">
+            <!-- Audits will be populated here -->
+        </div>
+    </div>
+    
+    <!-- Schedule Audit Modal -->
+    <div id="scheduleModal" class="modal">
+        <div class="modal-content">
+            <h3>Schedule New Audit</h3>
+            <form id="auditForm">
+                <div class="form-group">
+                    <label for="facility">Facility *</label>
+                    <select id="facility" required>
+                        <option value="">Select facility</option>
+                        <option value="General Hospital">General Hospital</option>
+                        <option value="Emergency Center">Emergency Center</option>
+                        <option value="Pediatric Ward">Pediatric Ward</option>
+                        <option value="Outpatient Clinic">Outpatient Clinic</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="type">Audit Type *</label>
+                    <select id="type" required>
+                        <option value="Internal">Internal</option>
+                        <option value="External">External</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="startDate">Start Date *</label>
+                    <input type="date" id="startDate" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="auditor">Lead Auditor *</label>
+                    <select id="auditor" required>
+                        <option value="">Select auditor</option>
+                        <option value="Dr. Smith">Dr. Smith</option>
+                        <option value="Dr. Johnson">Dr. Johnson</option>
+                        <option value="Jane Doe">Jane Doe</option>
+                        <option value="Mike Brown">Mike Brown</option>
+                        <option value="Sarah Wilson">Sarah Wilson</option>
+                    </select>
+                </div>
+                
+                <div style="text-align: right; margin-top: 20px;">
+                    <button type="button" class="btn" style="background: #6b7280;" onclick="closeModal()">Cancel</button>
+                    <button type="submit" class="btn">Schedule Audit</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // Sample audit data
+        let audits = [
+            { id: 1, facility: 'General Hospital', type: 'Internal', date: '2024-06-15', status: 'Completed', auditor: 'Dr. Smith', score: 94, findings: 2 },
+            { id: 2, facility: 'Clinic A', type: 'External', date: '2024-06-10', status: 'In Progress', auditor: 'Jane Doe', score: null, findings: 0 },
+            { id: 3, facility: 'Emergency Center', type: 'Internal', date: '2024-06-08', status: 'Scheduled', auditor: 'Dr. Johnson', score: null, findings: 0 },
+            { id: 4, facility: 'Pediatric Ward', type: 'External', date: '2024-06-05', status: 'Completed', auditor: 'Mike Brown', score: 87, findings: 4 }
+        ];
+
+        function renderAudits() {
+            const auditList = document.getElementById('auditList');
+            auditList.innerHTML = '';
+            
+            audits.forEach(audit => {
+                const auditItem = document.createElement('div');
+                auditItem.className = 'audit-item';
+                auditItem.innerHTML = `
+                    <div class="audit-info">
+                        <div class="audit-facility">${audit.facility}</div>
+                        <div class="audit-details">
+                            ${audit.type} • ${audit.date} • ${audit.auditor}
+                            ${audit.score ? ` • Score: ${audit.score}%` : ''}
+                            ${audit.findings > 0 ? ` • ${audit.findings} findings` : ''}
+                        </div>
+                    </div>
+                    <span class="status-badge status-${audit.status.toLowerCase().replace(' ', '-')}">
+                        ${audit.status}
+                    </span>
+                `;
+                auditList.appendChild(auditItem);
+            });
+        }
+
+        function openScheduleModal() {
+            document.getElementById('scheduleModal').style.display = 'block';
+        }
+
+        function closeModal() {
+            document.getElementById('scheduleModal').style.display = 'none';
+            document.getElementById('auditForm').reset();
+        }
+
+        function exportAudits() {
+            const csvContent = convertToCSV(audits);
+            downloadFile(csvContent, 'audit-report.csv', 'text/csv');
+            alert('Export file "audit-report.csv" has been downloaded successfully!');
+        }
+
+        function convertToCSV(data) {
+            if (!data || data.length === 0) return '';
+            
+            const headers = Object.keys(data[0]).join(',');
+            const rows = data.map(row => 
+                Object.values(row).map(value => {
+                    if (value === null || value === undefined) return '';
+                    if (Array.isArray(value)) return `"${value.join('; ')}"`;
+                    if (typeof value === 'string' && (value.includes(',') || value.includes('"'))) {
+                        return `"${value.replace(/"/g, '""')}"`;
+                    }
+                    return value;
+                }).join(',')
+            );
+            
+            return [headers, ...rows].join('\n');
+        }
+
+        function downloadFile(content, filename, type) {
+            const blob = new Blob([content], { type });
+            const url = window.URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = filename;
+            link.click();
+            window.URL.revokeObjectURL(url);
+        }
+
+        // Form submission handler
+        document.getElementById('auditForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const newAudit = {
+                id: audits.length + 1,
+                facility: document.getElementById('facility').value,
+                type: document.getElementById('type').value,
+                date: document.getElementById('startDate').value,
+                auditor: document.getElementById('auditor').value,
+                status: 'Scheduled',
+                score: null,
+                findings: 0
+            };
+            
+            audits.push(newAudit);
+            renderAudits();
+            closeModal();
+            
+            alert(`Audit scheduled for ${newAudit.facility} on ${newAudit.date}`);
+        });
+
+        // Close modal when clicking outside
+        window.onclick = function(event) {
+            const modal = document.getElementById('scheduleModal');
+            if (event.target == modal) {
+                closeModal();
+            }
+        }
+
+        // Initial render
+        renderAudits();
+    </script>
+</body>
+</html> 

@@ -137,6 +137,99 @@ const useLanguage = () => {
 // Authentication Context
 const AuthContext = createContext();
 
+// Facility Management Context
+const FacilityContext = createContext();
+
+const FacilityProvider = ({ children }) => {
+  const [facilities, setFacilities] = useState([
+    {
+      id: 1,
+      name: 'General Hospital',
+      type: 'hospital',
+      address: '123 Main St',
+      city: 'Central City',
+      state: 'CA',
+      zipCode: '12345',
+      phone: '(555) 123-4567',
+      email: 'contact@generalhospital.com',
+      manager: 'Dr. Sarah Johnson',
+      capacity: '250',
+      services: ['Emergency Care', 'Surgery', 'ICU'],
+      certifications: ['Joint Commission', 'ISO 9001']
+    },
+    {
+      id: 2,
+      name: 'Emergency Center',
+      type: 'emergency center',
+      address: '456 Oak Ave',
+      city: 'Downtown',
+      state: 'CA',
+      zipCode: '12346',
+      phone: '(555) 234-5678',
+      email: 'contact@emergencycenter.com',
+      manager: 'Dr. Mike Brown',
+      capacity: '75',
+      services: ['Emergency Care', 'Radiology'],
+      certifications: ['OSHA', 'HIPAA']
+    },
+    {
+      id: 3,
+      name: 'Pediatric Ward',
+      type: 'specialty center',
+      address: '789 Pine St',
+      city: 'Suburb',
+      state: 'CA',
+      zipCode: '12347',
+      phone: '(555) 345-6789',
+      email: 'contact@pediatricward.com',
+      manager: 'Dr. Lisa Chen',
+      capacity: '120',
+      services: ['Pediatrics', 'Emergency Care'],
+      certifications: ['Joint Commission', 'CLIA']
+    }
+  ]);
+
+  const addFacility = (facilityData) => {
+    const newFacility = {
+      ...facilityData,
+      id: Date.now() // Simple ID generation
+    };
+    setFacilities(prev => [...prev, newFacility]);
+    return newFacility;
+  };
+
+  const deleteFacility = (facilityId) => {
+    setFacilities(prev => prev.filter(facility => facility.id !== facilityId));
+  };
+
+  const updateFacility = (facilityId, updates) => {
+    setFacilities(prev => 
+      prev.map(facility => 
+        facility.id === facilityId ? { ...facility, ...updates } : facility
+      )
+    );
+  };
+
+  return (
+    <FacilityContext.Provider value={{
+      facilities,
+      addFacility,
+      deleteFacility,
+      updateFacility
+    }}>
+      {children}
+    </FacilityContext.Provider>
+  );
+};
+
+const useFacilities = () => {
+  const context = useContext(FacilityContext);
+  if (!context) {
+    throw new Error('useFacilities must be used within FacilityProvider');
+  }
+  return context;
+};
+
 const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -200,6 +293,53 @@ const useAuth = () => {
 
 // Modal Context
 const ModalContext = createContext();
+
+// Audit Context for managing audits state globally
+const AuditContext = createContext();
+
+const AuditProvider = ({ children }) => {
+  const [audits, setAudits] = useState([
+    { id: 1, facility: 'General Hospital', type: 'Internal', date: '2024-06-15', status: 'Completed', auditor: 'Dr. Smith', score: 94, findings: 2 },
+    { id: 2, facility: 'Clinic A', type: 'External', date: '2024-06-10', status: 'In Progress', auditor: 'Jane Doe', score: null, findings: 0 },
+    { id: 3, facility: 'Emergency Center', type: 'Internal', date: '2024-06-08', status: 'Scheduled', auditor: 'Dr. Johnson', score: null, findings: 0 },
+    { id: 4, facility: 'Pediatric Ward', type: 'External', date: '2024-06-05', status: 'Completed', auditor: 'Mike Brown', score: 87, findings: 4 }
+  ]);
+
+  const addAudit = (auditData) => {
+    const newAudit = {
+      ...auditData,
+      id: audits.length + 1,
+      status: 'Scheduled',
+      score: null,
+      findings: 0
+    };
+    setAudits(prev => [...prev, newAudit]);
+  };
+
+  const updateAudit = (auditId, updates) => {
+    setAudits(prev => prev.map(audit => 
+      audit.id === auditId ? { ...audit, ...updates } : audit
+    ));
+  };
+
+  const deleteAudit = (auditId) => {
+    setAudits(prev => prev.filter(audit => audit.id !== auditId));
+  };
+
+  return (
+    <AuditContext.Provider value={{ audits, addAudit, updateAudit, deleteAudit }}>
+      {children}
+    </AuditContext.Provider>
+  );
+};
+
+const useAudits = () => {
+  const context = useContext(AuditContext);
+  if (!context) {
+    throw new Error('useAudits must be used within AuditProvider');
+  }
+  return context;
+};
 
 const ModalProvider = ({ children }) => {
   const [modals, setModals] = useState({});
@@ -358,11 +498,20 @@ const exportData = (data, filename, format = 'csv') => {
 const convertToCSV = (data) => {
   if (!data || data.length === 0) return '';
   
+  // Handle special formatting for audit data
   const headers = Object.keys(data[0]).join(',');
   const rows = data.map(row => 
-    Object.values(row).map(value => 
-      typeof value === 'string' && value.includes(',') ? `"${value}"` : value
-    ).join(',')
+    Object.values(row).map(value => {
+      // Handle null/undefined values
+      if (value === null || value === undefined) return '';
+      // Handle arrays (like standards or audit team)
+      if (Array.isArray(value)) return `"${value.join('; ')}"`;
+      // Quote strings that contain commas or quotes
+      if (typeof value === 'string' && (value.includes(',') || value.includes('"'))) {
+        return `"${value.replace(/"/g, '""')}"`;
+      }
+      return value;
+    }).join(',')
   );
   
   return [headers, ...rows].join('\n');
@@ -732,6 +881,7 @@ const SafetyAdvancedFilter = ({ onApplyFilters, onClose }) => {
 
 // Add Facility Form
 const AddFacilityForm = ({ onClose }) => {
+  const { addFacility } = useFacilities();
   const [formData, setFormData] = useState({
     name: '',
     type: 'hospital',
@@ -747,17 +897,33 @@ const AddFacilityForm = ({ onClose }) => {
     certifications: []
   });
 
-  const facilityTypes = ['Hospital', 'Clinic', 'Emergency Center', 'Specialty Center', 'Outpatient Facility'];
-  const serviceOptions = ['Emergency Care', 'Surgery', 'Maternity', 'Pediatrics', 'ICU', 'Radiology', 'Laboratory'];
+  // Clear services and capacity when facility type changes
+  const handleTypeChange = (newType) => {
+    setFormData(prev => ({
+      ...prev,
+      type: newType,
+      services: [], // Clear services when type changes
+      capacity: newType === 'clinic' ? '' : prev.capacity // Clear capacity for clinics
+    }));
+  };
+
+  const facilityTypes = ['Hospital', 'Clinic'];
+  
+  const hospitalServiceOptions = ['Emergency Care', 'Surgery', 'Maternity', 'Pediatrics', 'ICU', 'Radiology', 'Laboratory', 'Cardiology', 'Oncology', 'Neurology'];
+  const clinicServiceOptions = ['General Practice', 'Pediatrics', 'Dermatology', 'Orthopedics', 'Physical Therapy', 'Mental Health', 'Urgent Care', 'Radiology'];
+  
+  const serviceOptions = formData.type === 'hospital' ? hospitalServiceOptions : clinicServiceOptions;
   const certificationOptions = ['Joint Commission', 'ISO 9001', 'ISO 14001', 'OSHA', 'HIPAA', 'CLIA'];
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    // Simulate API call
-    setTimeout(() => {
+    try {
+      const newFacility = addFacility(formData);
       alert(`Facility "${formData.name}" has been successfully added to the system!`);
       onClose();
-    }, 1000);
+    } catch (error) {
+      alert('Error adding facility. Please try again.');
+    }
   };
 
   const handleServiceChange = (service) => {
@@ -788,7 +954,7 @@ const AddFacilityForm = ({ onClose }) => {
           <select
             required
             value={formData.type}
-            onChange={(e) => setFormData(prev => ({ ...prev, type: e.target.value }))}
+            onChange={(e) => handleTypeChange(e.target.value)}
             className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
           >
             {facilityTypes.map(type => (
@@ -868,7 +1034,7 @@ const AddFacilityForm = ({ onClose }) => {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div className={`grid grid-cols-1 ${formData.type === 'hospital' ? 'md:grid-cols-2' : ''} gap-4`}>
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">Facility Manager *</label>
           <input
@@ -880,16 +1046,18 @@ const AddFacilityForm = ({ onClose }) => {
             placeholder="Manager name"
           />
         </div>
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">Bed Capacity</label>
-          <input
-            type="number"
-            value={formData.capacity}
-            onChange={(e) => setFormData(prev => ({ ...prev, capacity: e.target.value }))}
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            placeholder="Number of beds"
-          />
-        </div>
+        {formData.type === 'hospital' && (
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Bed Capacity</label>
+            <input
+              type="number"
+              value={formData.capacity}
+              onChange={(e) => setFormData(prev => ({ ...prev, capacity: e.target.value }))}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              placeholder="Number of beds"
+            />
+          </div>
+        )}
       </div>
 
       <div>
@@ -952,13 +1120,16 @@ const AddFacilityForm = ({ onClose }) => {
 
 // Schedule Audit Form
 const ScheduleAuditForm = ({ onClose }) => {
+  const { facilities } = useFacilities();
+  const { addAudit } = useAudits();
   const [formData, setFormData] = useState({
     facility: '',
-    auditType: 'internal',
+    type: 'Internal',
+    date: '',
+    auditor: '',
     auditScope: '',
     startDate: '',
     endDate: '',
-    leadAuditor: '',
     auditTeam: [],
     objectives: '',
     standards: [],
@@ -966,16 +1137,27 @@ const ScheduleAuditForm = ({ onClose }) => {
     notifications: true
   });
 
-  const facilities = ['General Hospital', 'Emergency Center', 'Pediatric Ward', 'Outpatient Clinic', 'Surgical Center'];
   const auditors = ['Dr. Smith', 'Dr. Johnson', 'Jane Doe', 'Mike Brown', 'Sarah Wilson'];
   const standardOptions = ['ISO 9001', 'Joint Commission', 'OSHA', 'HIPAA', 'CMS', 'State Regulations'];
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    setTimeout(() => {
-      alert(`Audit for "${formData.facility}" has been scheduled successfully!`);
-      onClose();
-    }, 1000);
+    const auditData = {
+      ...formData,
+      date: formData.startDate || formData.date
+    };
+    addAudit(auditData);
+    alert(`Audit scheduled for ${formData.facility} on ${auditData.date}`);
+    onClose();
+  };
+
+  const handleStandardChange = (standard) => {
+    setFormData(prev => ({
+      ...prev,
+      standards: prev.standards.includes(standard)
+        ? prev.standards.filter(s => s !== standard)
+        : [...prev.standards, standard]
+    }));
   };
 
   return (
@@ -991,7 +1173,7 @@ const ScheduleAuditForm = ({ onClose }) => {
           >
             <option value="">Select facility</option>
             {facilities.map(facility => (
-              <option key={facility} value={facility}>{facility}</option>
+              <option key={facility.id} value={facility.name}>{facility.name}</option>
             ))}
           </select>
         </div>
@@ -999,26 +1181,23 @@ const ScheduleAuditForm = ({ onClose }) => {
           <label className="block text-sm font-medium text-gray-700 mb-2">Audit Type *</label>
           <select
             required
-            value={formData.auditType}
-            onChange={(e) => setFormData(prev => ({ ...prev, auditType: e.target.value }))}
+            value={formData.type}
+            onChange={(e) => setFormData(prev => ({ ...prev, type: e.target.value }))}
             className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
           >
-            <option value="internal">Internal Audit</option>
-            <option value="external">External Audit</option>
-            <option value="surveillance">Surveillance Audit</option>
-            <option value="certification">Certification Audit</option>
+            <option value="Internal">Internal</option>
+            <option value="External">External</option>
           </select>
         </div>
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-2">Audit Scope *</label>
+        <label className="block text-sm font-medium text-gray-700 mb-2">Audit Scope</label>
         <textarea
-          required
           value={formData.auditScope}
           onChange={(e) => setFormData(prev => ({ ...prev, auditScope: e.target.value }))}
           className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-          rows="3"
+          rows="2"
           placeholder="Describe the scope and areas to be audited..."
         />
       </div>
@@ -1030,15 +1209,14 @@ const ScheduleAuditForm = ({ onClose }) => {
             type="date"
             required
             value={formData.startDate}
-            onChange={(e) => setFormData(prev => ({ ...prev, startDate: e.target.value }))}
+            onChange={(e) => setFormData(prev => ({ ...prev, startDate: e.target.value, date: e.target.value }))}
             className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
           />
         </div>
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">End Date *</label>
+          <label className="block text-sm font-medium text-gray-700 mb-2">End Date</label>
           <input
             type="date"
-            required
             value={formData.endDate}
             onChange={(e) => setFormData(prev => ({ ...prev, endDate: e.target.value }))}
             className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
@@ -1051,18 +1229,18 @@ const ScheduleAuditForm = ({ onClose }) => {
           <label className="block text-sm font-medium text-gray-700 mb-2">Lead Auditor *</label>
           <select
             required
-            value={formData.leadAuditor}
-            onChange={(e) => setFormData(prev => ({ ...prev, leadAuditor: e.target.value }))}
+            value={formData.auditor}
+            onChange={(e) => setFormData(prev => ({ ...prev, auditor: e.target.value }))}
             className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
           >
-            <option value="">Select lead auditor</option>
+            <option value="">Select auditor</option>
             {auditors.map(auditor => (
               <option key={auditor} value={auditor}>{auditor}</option>
             ))}
           </select>
         </div>
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">Priority Level</label>
+          <label className="block text-sm font-medium text-gray-700 mb-2">Priority</label>
           <select
             value={formData.priority}
             onChange={(e) => setFormData(prev => ({ ...prev, priority: e.target.value }))}
@@ -1077,36 +1255,31 @@ const ScheduleAuditForm = ({ onClose }) => {
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-2">Standards to Audit</label>
+        <label className="block text-sm font-medium text-gray-700 mb-2">Audit Objectives</label>
+        <textarea
+          value={formData.objectives}
+          onChange={(e) => setFormData(prev => ({ ...prev, objectives: e.target.value }))}
+          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+          rows="2"
+          placeholder="Define the specific objectives and goals for this audit..."
+        />
+      </div>
+
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-2">Standards & Regulations</label>
         <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
           {standardOptions.map(standard => (
             <label key={standard} className="flex items-center">
               <input
                 type="checkbox"
                 checked={formData.standards.includes(standard)}
-                onChange={() => setFormData(prev => ({
-                  ...prev,
-                  standards: prev.standards.includes(standard)
-                    ? prev.standards.filter(s => s !== standard)
-                    : [...prev.standards, standard]
-                }))}
+                onChange={() => handleStandardChange(standard)}
                 className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500"
               />
               <span className="ml-2 text-sm text-gray-700">{standard}</span>
             </label>
           ))}
         </div>
-      </div>
-
-      <div>
-        <label className="block text-sm font-medium text-gray-700 mb-2">Audit Objectives</label>
-        <textarea
-          value={formData.objectives}
-          onChange={(e) => setFormData(prev => ({ ...prev, objectives: e.target.value }))}
-          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-          rows="3"
-          placeholder="Define the specific objectives and goals for this audit..."
-        />
       </div>
 
       <div>
@@ -1142,6 +1315,7 @@ const ScheduleAuditForm = ({ onClose }) => {
 
 // Create CAPA Form
 const CreateCAPAForm = ({ onClose }) => {
+  const { facilities } = useFacilities();
   const [formData, setFormData] = useState({
     title: '',
     category: 'safety',
@@ -1161,7 +1335,6 @@ const CreateCAPAForm = ({ onClose }) => {
 
   const categories = ['Safety', 'Quality', 'Equipment', 'Process', 'Training', 'Documentation', 'Compliance'];
   const assignees = ['Quality Team', 'Safety Officer', 'IT Team', 'Maintenance', 'HR Department', 'Clinical Staff'];
-  const facilities = ['General Hospital', 'Emergency Center', 'Pediatric Ward', 'Outpatient Clinic', 'All Facilities'];
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -1310,8 +1483,9 @@ const CreateCAPAForm = ({ onClose }) => {
             className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
           >
             <option value="">Select facility</option>
+            <option value="All Facilities">All Facilities</option>
             {facilities.map(facility => (
-              <option key={facility} value={facility}>{facility}</option>
+              <option key={facility.id} value={facility.name}>{facility.name}</option>
             ))}
           </select>
         </div>
@@ -1349,6 +1523,7 @@ const CreateCAPAForm = ({ onClose }) => {
 
 // Report Incident Form
 const ReportIncidentForm = ({ onClose }) => {
+  const { facilities } = useFacilities();
   const [formData, setFormData] = useState({
     title: '',
     incidentType: 'medication_error',
@@ -1392,8 +1567,6 @@ const ReportIncidentForm = ({ onClose }) => {
     { value: 'fire_safety', label: 'Fire/Safety Incident' },
     { value: 'other', label: 'Other' }
   ];
-
-  const facilities = ['General Hospital', 'Emergency Center', 'Pediatric Ward', 'Outpatient Clinic', 'Surgical Center'];
   const staffRoles = ['Physician', 'Nurse', 'Pharmacist', 'Technician', 'Administrator', 'Support Staff'];
   const contributingFactors = [
     'Staffing Issues', 'Communication Problems', 'Equipment Issues', 'Training Deficiency',
@@ -1463,7 +1636,7 @@ const ReportIncidentForm = ({ onClose }) => {
           >
             <option value="">Select facility</option>
             {facilities.map(facility => (
-              <option key={facility} value={facility}>{facility}</option>
+              <option key={facility.id} value={facility.name}>{facility.name}</option>
             ))}
           </select>
         </div>
@@ -1732,6 +1905,7 @@ const ReportIncidentForm = ({ onClose }) => {
 
 // Schedule Event Form
 const ScheduleEventForm = ({ onClose }) => {
+  const { facilities } = useFacilities();
   const [formData, setFormData] = useState({
     title: '',
     type: 'audit',
@@ -1770,8 +1944,6 @@ const ScheduleEventForm = ({ onClose }) => {
     { value: 'maintenance', label: 'Maintenance', icon: '🔧' },
     { value: 'assessment', label: 'Assessment', icon: '📊' }
   ];
-
-  const facilities = ['General Hospital', 'Emergency Center', 'Pediatric Ward', 'Outpatient Clinic', 'Surgical Center', 'Laboratory', 'Radiology Department'];
   const staffOptions = ['Dr. Smith', 'Dr. Johnson', 'Jane Doe', 'Mike Brown', 'Sarah Wilson', 'Quality Team', 'Safety Officer', 'IT Team'];
 
   const handleSubmit = (e) => {
@@ -1889,7 +2061,7 @@ const ScheduleEventForm = ({ onClose }) => {
           >
             <option value="">Select facility</option>
             {facilities.map(facility => (
-              <option key={facility} value={facility}>{facility}</option>
+              <option key={facility.id} value={facility.name}>{facility.name}</option>
             ))}
           </select>
         </div>
@@ -2110,6 +2282,7 @@ const ScheduleEventForm = ({ onClose }) => {
 
 // Export Calendar Form
 const ExportCalendarForm = ({ onClose }) => {
+  const { facilities } = useFacilities();
   const [exportData, setExportData] = useState({
     format: 'pdf',
     dateRange: 'month',
@@ -2137,7 +2310,6 @@ const ExportCalendarForm = ({ onClose }) => {
   ];
 
   const eventTypes = ['audit', 'meeting', 'training', 'review', 'inspection', 'calibration', 'maintenance', 'assessment'];
-  const facilities = ['General Hospital', 'Emergency Center', 'Pediatric Ward', 'Outpatient Clinic', 'Surgical Center'];
 
   const handleExport = async (e) => {
     e.preventDefault();
@@ -2290,14 +2462,14 @@ const ExportCalendarForm = ({ onClose }) => {
             <h4 className="font-medium text-gray-800 mb-3">Facilities to Include</h4>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
               {facilities.map(facility => (
-                <label key={facility} className="flex items-center">
+                <label key={facility.id} className="flex items-center">
                   <input
                     type="checkbox"
-                    checked={exportData.facilities.includes(facility)}
-                    onChange={() => handleFacilityChange(facility)}
+                    checked={exportData.facilities.includes(facility.name)}
+                    onChange={() => handleFacilityChange(facility.name)}
                     className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500"
                   />
-                  <span className="ml-2 text-sm text-gray-700">{facility}</span>
+                  <span className="ml-2 text-sm text-gray-700">{facility.name}</span>
                 </label>
               ))}
             </div>
@@ -4807,6 +4979,7 @@ const Navigation = ({ activeTab, setActiveTab, sidebarOpen, setSidebarOpen }) =>
 const Dashboard = () => {
   const { t } = useLanguage();
   const { openModal } = useModal();
+  const { facilities, deleteFacility } = useFacilities();
 
   const KPICard = ({ title, value, icon: Icon, color, trend }) => (
     <div className="bg-white rounded-lg shadow-md p-6 border-l-4" style={{ borderLeftColor: color }}>
@@ -4841,13 +5014,6 @@ const Dashboard = () => {
             <Plus size={16} className="inline mr-2" />
             Add Facility
           </button>
-          <button 
-            onClick={() => openModal('scheduleAudit')}
-            className="bg-blue-500 text-white px-6 py-2 rounded-lg font-medium hover:bg-blue-400 transition-colors"
-          >
-            <Calendar size={16} className="inline mr-2" />
-            Schedule Audit
-          </button>
         </div>
       </div>
 
@@ -4855,7 +5021,7 @@ const Dashboard = () => {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <KPICard
           title={t.totalFacilities}
-          value={dashboardData.kpis.totalFacilities}
+          value={facilities.length}
           icon={Building2}
           color="#3b82f6"
           trend={2.5}
@@ -4919,6 +5085,50 @@ const Dashboard = () => {
               <Legend />
             </RechartsPieChart>
           </ResponsiveContainer>
+        </div>
+      </div>
+
+      {/* Facility Management Section */}
+      <div className="bg-white rounded-lg shadow-md p-6">
+        <div className="mb-4">
+          <h3 className="text-lg font-semibold">Facility Management</h3>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {facilities.map((facility) => (
+            <div key={facility.id} className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
+              <div className="flex justify-between items-start mb-2">
+                <h4 className="font-medium text-gray-900">{facility.name}</h4>
+                <button
+                  onClick={() => {
+                    if (window.confirm(`Are you sure you want to delete ${facility.name}?`)) {
+                      deleteFacility(facility.id);
+                    }
+                  }}
+                  className="text-red-500 hover:text-red-700 transition-colors"
+                >
+                  <Trash2 size={16} />
+                </button>
+              </div>
+              <p className="text-sm text-gray-600 capitalize mb-1">{facility.type}</p>
+              <p className="text-sm text-gray-500 mb-2">{facility.city}, {facility.state}</p>
+              <p className="text-sm text-gray-500 mb-2">Manager: {facility.manager}</p>
+              {facility.capacity && (
+                <p className="text-sm text-gray-500 mb-2">Capacity: {facility.capacity} beds</p>
+              )}
+              <div className="flex flex-wrap gap-1 mt-2">
+                {facility.services.slice(0, 2).map((service) => (
+                  <span key={service} className="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded">
+                    {service}
+                  </span>
+                ))}
+                {facility.services.length > 2 && (
+                  <span className="bg-gray-100 text-gray-600 text-xs px-2 py-1 rounded">
+                    +{facility.services.length - 2} more
+                  </span>
+                )}
+              </div>
+            </div>
+          ))}
         </div>
       </div>
 
@@ -4987,13 +5197,7 @@ const AuditManagement = () => {
   const { openModal } = useModal();
   const [searchTerm, setSearchTerm] = useState('');
   const [filterStatus, setFilterStatus] = useState('all');
-
-  const audits = [
-    { id: 1, facility: 'General Hospital', type: 'Internal', date: '2024-06-15', status: 'Completed', auditor: 'Dr. Smith', score: 94, findings: 2 },
-    { id: 2, facility: 'Clinic A', type: 'External', date: '2024-06-10', status: 'In Progress', auditor: 'Jane Doe', score: null, findings: 0 },
-    { id: 3, facility: 'Emergency Center', type: 'Internal', date: '2024-06-08', status: 'Scheduled', auditor: 'Dr. Johnson', score: null, findings: 0 },
-    { id: 4, facility: 'Pediatric Ward', type: 'External', date: '2024-06-05', status: 'Completed', auditor: 'Mike Brown', score: 87, findings: 4 }
-  ];
+  const { audits } = useAudits();
 
   const filteredAudits = audits.filter(audit => {
     const matchesSearch = audit.facility.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -8848,22 +9052,26 @@ function AppContent() {
   return (
     <UserRoleProvider>
       <LanguageProvider>
-        <ModalProvider>
-          <div className="min-h-screen bg-gray-50">
-            <Navigation 
-              activeTab={activeTab}
-              setActiveTab={setActiveTab}
-              sidebarOpen={sidebarOpen}
-              setSidebarOpen={setSidebarOpen}
-            />
-            
-            <div className="lg:ml-64 min-h-screen">
-              <main className="p-4 lg:p-8 pt-16 lg:pt-8">
-                {renderContent()}
-              </main>
-            </div>
-          </div>
-        </ModalProvider>
+        <FacilityProvider>
+          <AuditProvider>
+            <ModalProvider>
+              <div className="min-h-screen bg-gray-50">
+                <Navigation 
+                  activeTab={activeTab}
+                  setActiveTab={setActiveTab}
+                  sidebarOpen={sidebarOpen}
+                  setSidebarOpen={setSidebarOpen}
+                />
+                
+                <div className="lg:ml-64 min-h-screen">
+                  <main className="p-4 lg:p-8 pt-16 lg:pt-8">
+                    {renderContent()}
+                  </main>
+                </div>
+              </div>
+            </ModalProvider>
+          </AuditProvider>
+        </FacilityProvider>
       </LanguageProvider>
     </UserRoleProvider>
   );

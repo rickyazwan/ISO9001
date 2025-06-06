@@ -39,7 +39,7 @@ input:focus,
 select:focus,
 textarea:focus {
   outline: none;
-  @apply ring-2 ring-blue-500 ring-opacity-50;
+  @apply ring-2 ring-blue-500/50;
 }
 
 /* Print styles for reports */
@@ -175,19 +175,19 @@ textarea:focus {
 
 /* Button variants */
 .btn-primary {
-  @apply bg-blue-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 transition-colors;
+  @apply bg-blue-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-blue-700 focus:ring-2 focus:ring-blue-500/50 transition-colors;
 }
 
 .btn-secondary {
-  @apply bg-gray-200 text-gray-700 px-4 py-2 rounded-lg font-medium hover:bg-gray-300 focus:ring-2 focus:ring-gray-500 focus:ring-opacity-50 transition-colors;
+  @apply bg-gray-200 text-gray-700 px-4 py-2 rounded-lg font-medium hover:bg-gray-300 focus:ring-2 focus:ring-gray-500/50 transition-colors;
 }
 
 .btn-danger {
-  @apply bg-red-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-red-700 focus:ring-2 focus:ring-red-500 focus:ring-opacity-50 transition-colors;
+  @apply bg-red-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-red-700 focus:ring-2 focus:ring-red-500/50 transition-colors;
 }
 
 .btn-success {
-  @apply bg-green-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-green-700 focus:ring-2 focus:ring-green-500 focus:ring-opacity-50 transition-colors;
+  @apply bg-green-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-green-700 focus:ring-2 focus:ring-green-500/50 transition-colors;
 }
 
 /* Form input styles */
@@ -280,13 +280,13 @@ textarea:focus {
 
 /* Focus visible for keyboard navigation */
 .focus-visible:focus {
-  @apply outline-none ring-2 ring-blue-500 ring-opacity-50;
+  @apply outline-none ring-2 ring-blue-500/50;
 }
 
 /* Mobile responsive adjustments */
 @media (max-width: 640px) {
   .mobile-stack {
-    @apply flex-col space-y-2 space-x-0;
+    @apply flex-col space-y-2;
   }
   
   .mobile-full {
