@@ -145,7 +145,9 @@ export const RoleBasedActionButtons = ({
   openModal, // Pass the modal function from the main app
   closeModal, // Pass the closeModal function from the main app
   updateAudit, // Pass the updateAudit function for edit functionality
-  deleteAuditFunc // Pass the deleteAudit function for delete functionality
+  deleteAuditFunc, // Pass the deleteAudit function for delete functionality
+  updateCAPA, // Pass the updateCAPA function for CAPA edit functionality
+  deleteCAPA // Pass the deleteCAPA function for CAPA delete functionality
 }) => {
   const { currentUser } = useUserRole();
   const permissions = currentUser.permissions[type];
@@ -157,35 +159,35 @@ export const RoleBasedActionButtons = ({
         if (onView) {
           onView(item);
         } else {
-          handleAction(type, 'view', item, openModal, closeModal, updateAudit, deleteAuditFunc);
+          handleAction(type, 'view', item, openModal, closeModal, updateAudit, deleteAuditFunc, updateCAPA, deleteCAPA);
         }
         break;
       case 'edit':
         if (onEdit) {
           onEdit(item);
         } else {
-          handleAction(type, 'edit', item, openModal, closeModal, updateAudit, deleteAuditFunc);
+          handleAction(type, 'edit', item, openModal, closeModal, updateAudit, deleteAuditFunc, updateCAPA, deleteCAPA);
         }
         break;
       case 'delete':
         if (onDelete) {
           onDelete(item);
         } else {
-          handleAction(type, 'delete', item, openModal, closeModal, updateAudit, deleteAuditFunc);
+          handleAction(type, 'delete', item, openModal, closeModal, updateAudit, deleteAuditFunc, updateCAPA, deleteCAPA);
         }
         break;
       case 'download':
         if (onDownload) {
           onDownload(item);
         } else {
-          handleAction(type, 'download', item, openModal, closeModal, updateAudit, deleteAuditFunc);
+          handleAction(type, 'download', item, openModal, closeModal, updateAudit, deleteAuditFunc, updateCAPA, deleteCAPA);
         }
         break;
       case 'run':
         if (onRun) {
           onRun(item);
         } else {
-          handleAction(type, 'run', item, openModal, closeModal, updateAudit, deleteAuditFunc);
+          handleAction(type, 'run', item, openModal, closeModal, updateAudit, deleteAuditFunc, updateCAPA, deleteCAPA);
         }
         break;
       default:
@@ -444,16 +446,16 @@ export const AuditTableRow = ({ audit, isLast = false, openModal, closeModal, up
 };
 
 // CAPA List Item with Role-Based Actions
-export const CAPAListItem = ({ capa, isLast = false }) => {
+export const CAPAListItem = ({ capa, isLast = false, openModal, closeModal, updateCAPA, deleteCAPA }) => {
   return (
     <div className={`border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow ${!isLast ? 'mb-4' : ''}`}>
       <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
         <div className="flex-1">
-          <div className="flex items-center gap-3 mb-2">
+          <div className="flex items-center gap-3 mb-2 flex-wrap">
             <h4 className="font-medium text-gray-900">{capa.title}</h4>
             <span className={`px-2 py-1 rounded-full text-xs font-medium ${
               capa.priority === 'Critical' ? 'bg-red-100 text-red-800' :
-              capa.priority === 'High' ? 'bg-red-100 text-red-800' :
+              capa.priority === 'High' ? 'bg-orange-100 text-orange-800' :
               capa.priority === 'Medium' ? 'bg-yellow-100 text-yellow-800' :
               'bg-green-100 text-green-800'
             }`}>
@@ -461,28 +463,63 @@ export const CAPAListItem = ({ capa, isLast = false }) => {
             </span>
             <span className={`px-2 py-1 rounded-full text-xs font-medium ${
               capa.status === 'Open' ? 'bg-red-100 text-red-800' :
-              capa.status === 'In Progress' ? 'bg-yellow-100 text-yellow-800' :
-              'bg-green-100 text-green-800'
+              capa.status === 'In Progress' ? 'bg-blue-100 text-blue-800' :
+              capa.status === 'Completed' ? 'bg-green-100 text-green-800' :
+              'bg-gray-100 text-gray-800'
             }`}>
               {capa.status}
             </span>
+            {/* Progress Badge */}
+            {capa.progress !== undefined && (
+              <span className={`px-2 py-1 rounded-full text-xs font-medium border ${
+                capa.progress === 100 ? 'bg-green-50 text-green-700 border-green-200' :
+                capa.progress >= 75 ? 'bg-blue-50 text-blue-700 border-blue-200' :
+                capa.progress >= 50 ? 'bg-yellow-50 text-yellow-700 border-yellow-200' :
+                capa.progress >= 25 ? 'bg-orange-50 text-orange-700 border-orange-200' :
+                'bg-red-50 text-red-700 border-red-200'
+              }`}>
+                {capa.progress}% Complete
+              </span>
+            )}
           </div>
           <div className="text-sm text-gray-500 space-y-1">
-            <p>Category: {capa.category}</p>
-            <p>Assignee: {capa.assignee}</p>
-            <p>Due Date: {capa.dueDate}</p>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+              <p>Category: {capa.category}</p>
+              <p>Assignee: {capa.assignee}</p>
+              <p>Due Date: {capa.dueDate}</p>
+              {capa.progress !== undefined && (
+                <p>Progress: <span className="font-medium text-gray-700">{capa.progress}%</span></p>
+              )}
+              {capa.dateOpened && <p>Opened: {capa.dateOpened}</p>}
+              {capa.dateCompleted && <p>Completed: {capa.dateCompleted}</p>}
+            </div>
           </div>
-          {capa.status === 'In Progress' && (
+          {/* Enhanced Progress Bar - Always Show */}
+          {capa.progress !== undefined && (
             <div className="mt-3">
               <div className="flex items-center justify-between text-sm text-gray-600 mb-1">
                 <span>Progress</span>
-                <span>{capa.progress}%</span>
+                <span className="font-medium">{capa.progress}%</span>
               </div>
-              <div className="w-full bg-gray-200 rounded-full h-2">
+              <div className="w-full bg-gray-200 rounded-full h-3 shadow-inner">
                 <div
-                  className="bg-blue-600 h-2 rounded-full transition-all duration-300"
+                  className={`h-3 rounded-full transition-all duration-300 ${
+                    capa.progress === 100 ? 'bg-green-500' :
+                    capa.progress >= 75 ? 'bg-blue-500' :
+                    capa.progress >= 50 ? 'bg-yellow-500' :
+                    capa.progress >= 25 ? 'bg-orange-500' :
+                    'bg-red-500'
+                  }`}
                   style={{ width: `${capa.progress}%` }}
                 ></div>
+              </div>
+              <div className="text-xs text-gray-500 mt-1">
+                {capa.progress === 0 && "🔴 Not Started"}
+                {capa.progress > 0 && capa.progress < 25 && "🟠 Just Started"}
+                {capa.progress >= 25 && capa.progress < 50 && "🟡 Early Stage"}
+                {capa.progress >= 50 && capa.progress < 75 && "🔵 Mid Stage"}
+                {capa.progress >= 75 && capa.progress < 100 && "🟣 Nearly Complete"}
+                {capa.progress === 100 && "🟢 Completed"}
               </div>
             </div>
           )}
@@ -490,9 +527,10 @@ export const CAPAListItem = ({ capa, isLast = false }) => {
         <RoleBasedActionButtons
           type="capa"
           item={capa}
-          onView={() => console.log('View CAPA', capa)}
-          onEdit={() => console.log('Edit CAPA', capa)}
-          onDelete={() => console.log('Delete CAPA', capa)}
+          openModal={openModal}
+          closeModal={closeModal}
+          updateCAPA={updateCAPA}
+          deleteCAPA={deleteCAPA}
         />
       </div>
     </div>

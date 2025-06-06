@@ -300,6 +300,9 @@ const ModalContext = createContext();
 // Audit Context for managing audits state globally
 const AuditContext = createContext();
 
+// CAPA Context for managing CAPAs state globally
+const CAPAContext = createContext();
+
 const AuditProvider = ({ children }) => {
   const [audits, setAudits] = useState([
     { id: 1, facility: 'General Hospital', type: 'Internal', date: '2024-06-15', status: 'Completed', auditor: 'Dr. Smith', score: 94, findings: 2 },
@@ -340,6 +343,139 @@ const useAudits = () => {
   const context = useContext(AuditContext);
   if (!context) {
     throw new Error('useAudits must be used within AuditProvider');
+  }
+  return context;
+};
+
+const CAPAProvider = ({ children }) => {
+  const [capas, setCAPAs] = useState([
+    { 
+      id: 1, 
+      title: 'Patient Record Security Enhancement', 
+      category: 'Information Security', 
+      priority: 'High', 
+      status: 'Open', 
+      assignee: 'IT Team', 
+      dueDate: '2024-07-01', 
+      progress: 0,
+      dateOpened: '2024-06-10',
+      description: 'Enhance security protocols for patient record access to prevent unauthorized viewing.',
+      rootCause: 'Inadequate access controls and authentication procedures'
+    },
+    { 
+      id: 2, 
+      title: 'Equipment Calibration Protocol', 
+      category: 'Equipment', 
+      priority: 'Medium', 
+      status: 'In Progress', 
+      assignee: 'Maintenance Team', 
+      dueDate: '2024-06-25', 
+      progress: 65,
+      dateOpened: '2024-06-05',
+      description: 'Standardize equipment calibration procedures across all departments.',
+      rootCause: 'Inconsistent calibration schedules and documentation'
+    },
+    { 
+      id: 3, 
+      title: 'Staff Training Compliance', 
+      category: 'Training', 
+      priority: 'High', 
+      status: 'In Progress', 
+      assignee: 'HR Department', 
+      dueDate: '2024-06-30', 
+      progress: 80,
+      dateOpened: '2024-06-01',
+      description: 'Ensure all staff complete mandatory training within required timeframes.',
+      rootCause: 'Lack of automated tracking and reminder systems'
+    },
+    { 
+      id: 4, 
+      title: 'Medication Storage Temperature', 
+      category: 'Safety', 
+      priority: 'Critical', 
+      status: 'Open', 
+      assignee: 'Pharmacy Team', 
+      dueDate: '2024-06-22', 
+      progress: 0,
+      dateOpened: '2024-06-15',
+      description: 'Address temperature control issues in medication storage areas.',
+      rootCause: 'Faulty HVAC system and inadequate monitoring'
+    },
+    { 
+      id: 5, 
+      title: 'Documentation Standardization', 
+      category: 'Quality', 
+      priority: 'Medium', 
+      status: 'Completed', 
+      assignee: 'Quality Team', 
+      dueDate: '2024-06-20', 
+      progress: 100,
+      dateOpened: '2024-05-15',
+      dateCompleted: '2024-06-18',
+      description: 'Standardize documentation formats across all departments.',
+      rootCause: 'Multiple legacy systems with different formats'
+    },
+    { 
+      id: 6, 
+      title: 'Emergency Response Training', 
+      category: 'Safety', 
+      priority: 'High', 
+      status: 'Completed', 
+      assignee: 'Safety Team', 
+      dueDate: '2024-06-15', 
+      progress: 100,
+      dateOpened: '2024-05-20',
+      dateCompleted: '2024-06-14',
+      description: 'Update emergency response procedures and conduct staff training.',
+      rootCause: 'Outdated emergency protocols and insufficient training frequency'
+    },
+    { 
+      id: 7, 
+      title: 'Data Backup Procedures', 
+      category: 'Information Security', 
+      priority: 'Medium', 
+      status: 'Open', 
+      assignee: 'IT Team', 
+      dueDate: '2024-07-10', 
+      progress: 0,
+      dateOpened: '2024-06-12',
+      description: 'Implement automated data backup procedures for critical systems.',
+      rootCause: 'Manual backup processes prone to human error'
+    }
+  ]);
+
+  const addCAPA = (capaData) => {
+    const newCAPA = {
+      ...capaData,
+      id: capas.length + 1,
+      status: 'Open',
+      progress: 0,
+      dateOpened: new Date().toISOString().split('T')[0]
+    };
+    setCAPAs(prev => [...prev, newCAPA]);
+  };
+
+  const updateCAPA = (capaId, updates) => {
+    setCAPAs(prev => prev.map(capa => 
+      capa.id === capaId ? { ...capa, ...updates } : capa
+    ));
+  };
+
+  const deleteCAPA = (capaId) => {
+    setCAPAs(prev => prev.filter(capa => capa.id !== capaId));
+  };
+
+  return (
+    <CAPAContext.Provider value={{ capas, addCAPA, updateCAPA, deleteCAPA }}>
+      {children}
+    </CAPAContext.Provider>
+  );
+};
+
+const useCAPAs = () => {
+  const context = useContext(CAPAContext);
+  if (!context) {
+    throw new Error('useCAPAs must be used within CAPAProvider');
   }
   return context;
 };
@@ -391,6 +527,12 @@ const ModalProvider = ({ children }) => {
         return <EditUserForm user={modalData.user} onClose={() => closeModal(id)} />;
       case 'changeFacilityName':
         return <ChangeFacilityNameForm onClose={() => closeModal(id)} />;
+      case 'viewCAPA':
+        return modalData.content;
+      case 'editCAPA':
+        return modalData.content;
+      case 'deleteCAPA':
+        return modalData.content;
       default:
         return modalData.content;
     }
@@ -428,6 +570,12 @@ const ModalProvider = ({ children }) => {
         return 'Edit User';
       case 'changeFacilityName':
         return 'Change Facility Name';
+      case 'viewCAPA':
+        return 'CAPA Details';
+      case 'editCAPA':
+        return 'Edit CAPA';
+      case 'deleteCAPA':
+        return 'Delete CAPA';
       default:
         return modalData.title;
     }
@@ -1360,6 +1508,7 @@ const ScheduleAuditForm = ({ onClose }) => {
 // Create CAPA Form
 const CreateCAPAForm = ({ onClose }) => {
   const { facilities } = useFacilities();
+  const { addCAPA } = useCAPAs();
   const [formData, setFormData] = useState({
     title: '',
     category: 'safety',
@@ -1382,10 +1531,30 @@ const CreateCAPAForm = ({ onClose }) => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
+    
+    // Prepare CAPA data for creation
+    const capaData = {
+      title: formData.title,
+      category: formData.category.charAt(0).toUpperCase() + formData.category.slice(1), // Capitalize first letter
+      priority: formData.priority.charAt(0).toUpperCase() + formData.priority.slice(1), // Capitalize first letter
+      description: formData.description,
+      rootCause: formData.rootCause,
+      assignee: formData.assignee,
+      dueDate: formData.dueDate,
+      correctiveAction: formData.correctiveAction,
+      preventiveAction: formData.preventiveAction,
+      facility: formData.facility,
+      riskLevel: formData.riskLevel,
+      resources: formData.resources
+    };
+
+    // Add the CAPA using the context function
+    addCAPA(capaData);
+    
     setTimeout(() => {
-      alert(`CAPA "${formData.title}" has been created successfully!`);
+      alert(`✅ CAPA "${formData.title}" has been created successfully!\n\nCategory: ${capaData.category}\nPriority: ${capaData.priority}\nAssignee: ${capaData.assignee}\nDue Date: ${capaData.dueDate}\n\nThe CAPA has been added to your management system.`);
       onClose();
-    }, 1000);
+    }, 800);
   };
 
   return (
@@ -5618,21 +5787,28 @@ const AuditManagement = () => {
 // CAPA Management Component
 const CAPAManagement = () => {
   const [activeTab, setActiveTab] = useState('overview');
-  const { openModal } = useModal();
+  const { openModal, closeModal } = useModal();
+  const { capas, updateCAPA, deleteCAPA } = useCAPAs();
 
+  // Calculate real stats from capas data
   const capaStats = {
-    total: 45,
-    open: 12,
-    inProgress: 18,
-    completed: 15,
-    overdue: 3
+    total: capas.length,
+    open: capas.filter(capa => capa.status === 'Open').length,
+    inProgress: capas.filter(capa => capa.status === 'In Progress').length,
+    completed: capas.filter(capa => capa.status === 'Completed').length,
+    overdue: capas.filter(capa => {
+      const dueDate = new Date(capa.dueDate);
+      const today = new Date();
+      return capa.status !== 'Completed' && dueDate < today;
+    }).length
   };
 
-  const capas = [
-    { id: 1, title: 'Patient Record Security Enhancement', category: 'Information Security', priority: 'High', status: 'Open', assignee: 'IT Team', dueDate: '2024-07-01', progress: 0 },
-    { id: 2, title: 'Equipment Calibration Protocol', category: 'Equipment', priority: 'Medium', status: 'In Progress', assignee: 'Maintenance', dueDate: '2024-06-25', progress: 65 },
-    { id: 3, title: 'Staff Training Compliance', category: 'Training', priority: 'High', status: 'In Progress', assignee: 'HR Department', dueDate: '2024-06-30', progress: 80 },
-    { id: 4, title: 'Medication Storage Temperature', category: 'Safety', priority: 'Critical', status: 'Open', assignee: 'Pharmacy', dueDate: '2024-06-22', progress: 0 }
+  // Calculate priority distribution for charts
+  const priorityDistribution = [
+    { name: 'Critical', value: capas.filter(c => c.priority === 'Critical').length },
+    { name: 'High', value: capas.filter(c => c.priority === 'High').length },
+    { name: 'Medium', value: capas.filter(c => c.priority === 'Medium').length },
+    { name: 'Low', value: capas.filter(c => c.priority === 'Low').length }
   ];
 
   const StatCard = ({ title, value, color, icon: Icon }) => (
@@ -5709,12 +5885,7 @@ const CAPAManagement = () => {
                 <div>
                   <h4 className="font-medium mb-4">Priority Distribution</h4>
                   <ResponsiveContainer width="100%" height={200}>
-                    <BarChart data={[
-                      { name: 'Critical', value: 4 },
-                      { name: 'High', value: 8 },
-                      { name: 'Medium', value: 15 },
-                      { name: 'Low', value: 18 }
-                    ]}>
+                    <BarChart data={priorityDistribution}>
                       <CartesianGrid strokeDasharray="3 3" />
                       <XAxis dataKey="name" />
                       <YAxis />
@@ -5786,6 +5957,10 @@ const CAPAManagement = () => {
                     key={capa.id} 
                     capa={capa} 
                     isLast={index === capas.length - 1}
+                    openModal={openModal}
+                    closeModal={closeModal}
+                    updateCAPA={updateCAPA}
+                    deleteCAPA={deleteCAPA}
                   />
                 ))}
               </div>
@@ -9349,7 +9524,8 @@ function AppContent() {
       <LanguageProvider>
         <FacilityProvider>
           <AuditProvider>
-            <ModalProvider>
+            <CAPAProvider>
+              <ModalProvider>
               <div className="min-h-screen bg-gray-50">
                 <Navigation 
                   activeTab={activeTab}
@@ -9364,7 +9540,8 @@ function AppContent() {
                   </main>
                 </div>
               </div>
-            </ModalProvider>
+              </ModalProvider>
+            </CAPAProvider>
           </AuditProvider>
         </FacilityProvider>
       </LanguageProvider>

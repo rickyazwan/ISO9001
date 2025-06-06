@@ -415,6 +415,62 @@ export const ViewAuditModal = ({ audit, onClose }) => {
 export const ViewCAPAModal = ({ capa, onClose }) => {
   const capaDetails = CAPAActionHandler.viewCAPA(capa);
 
+  const handleExport = () => {
+    // Create comprehensive CAPA report data
+    const capaReport = {
+      'CAPA ID': capa.id,
+      'Title': capaDetails.title,
+      'Category': capaDetails.category,
+      'Priority': capaDetails.priority,
+      'Status': capaDetails.status,
+      'Assignee': capaDetails.assignee,
+      'Due Date': capaDetails.dueDate,
+      'Date Opened': capa.dateOpened || 'N/A',
+      'Progress (%)': capaDetails.progress || 0,
+      'Description': capa.description || '',
+      'Root Cause': capa.rootCause || '',
+      'Export Date': new Date().toLocaleDateString(),
+      'Export Time': new Date().toLocaleTimeString()
+    };
+
+    // Export CAPA details
+    const capaCSV = convertCAPAToCSV([capaReport]);
+    downloadFile(capaCSV, `CAPA_${capa.id}_${capa.title.replace(/\s+/g, '_')}_${new Date().toISOString().split('T')[0]}.csv`, 'text/csv');
+
+    // Show success message
+    setTimeout(() => {
+      alert(`✅ CAPA report exported successfully!\n\nFile: CAPA_${capa.id}_${capa.title.replace(/\s+/g, '_')}.csv`);
+    }, 500);
+  };
+
+  const convertCAPAToCSV = (data) => {
+    if (!data || data.length === 0) return '';
+    const headers = Object.keys(data[0]).join(',');
+    const rows = data.map(row => 
+      Object.values(row).map(value => {
+        if (value === null || value === undefined) return '';
+        if (typeof value === 'string' && (value.includes(',') || value.includes('"'))) {
+          return `"${value.replace(/"/g, '""')}"`;
+        }
+        return value;
+      }).join(',')
+    );
+    return [headers, ...rows].join('\n');
+  };
+
+  const downloadFile = (content, filename, type) => {
+    const blob = new Blob([content], { type });
+    const url = window.URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = filename;
+    link.style.display = 'none';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    window.URL.revokeObjectURL(url);
+  };
+
   return (
     <div className="space-y-6">
       {/* CAPA Header */}
@@ -423,20 +479,41 @@ export const ViewCAPAModal = ({ capa, onClose }) => {
         <div className="grid grid-cols-2 gap-4 text-sm">
           <div><strong>Title:</strong> {capaDetails.title}</div>
           <div><strong>Category:</strong> {capaDetails.category}</div>
-          <div><strong>Priority:</strong> <span className="px-2 py-1 bg-red-100 text-red-800 rounded text-xs">{capaDetails.priority}</span></div>
-          <div><strong>Status:</strong> <span className="px-2 py-1 bg-yellow-100 text-yellow-800 rounded text-xs">{capaDetails.status}</span></div>
+          <div><strong>Priority:</strong> <span className={`px-2 py-1 rounded text-xs font-medium ${
+            capaDetails.priority === 'Critical' ? 'bg-red-100 text-red-800' :
+            capaDetails.priority === 'High' ? 'bg-orange-100 text-orange-800' :
+            capaDetails.priority === 'Medium' ? 'bg-yellow-100 text-yellow-800' :
+            'bg-green-100 text-green-800'
+          }`}>{capaDetails.priority}</span></div>
+          <div><strong>Status:</strong> <span className={`px-2 py-1 rounded text-xs font-medium ${
+            capaDetails.status === 'Completed' ? 'bg-green-100 text-green-800' :
+            capaDetails.status === 'In Progress' ? 'bg-blue-100 text-blue-800' :
+            'bg-gray-100 text-gray-800'
+          }`}>{capaDetails.status}</span></div>
           <div><strong>Assignee:</strong> {capaDetails.assignee}</div>
           <div><strong>Due Date:</strong> {capaDetails.dueDate}</div>
+          {capa.dateOpened && <div><strong>Date Opened:</strong> {capa.dateOpened}</div>}
+          {capa.dateCompleted && <div><strong>Date Completed:</strong> {capa.dateCompleted}</div>}
         </div>
       </div>
 
-      {/* Root Cause Analysis */}
-      <div>
-        <h4 className="font-medium mb-2">Root Cause Analysis</h4>
-        <p className="text-gray-700 text-sm bg-gray-50 p-3 rounded">{capaDetails.details.rootCauseAnalysis}</p>
-      </div>
+      {/* Description */}
+      {capa.description && (
+        <div>
+          <h4 className="font-medium mb-2">Description</h4>
+          <p className="text-gray-700 text-sm bg-gray-50 p-3 rounded">{capa.description}</p>
+        </div>
+      )}
 
-      {/* Corrective Actions */}
+      {/* Root Cause Analysis */}
+      {capa.rootCause && (
+        <div>
+          <h4 className="font-medium mb-2">Root Cause Analysis</h4>
+          <p className="text-gray-700 text-sm bg-gray-50 p-3 rounded">{capa.rootCause}</p>
+        </div>
+      )}
+
+      {/* Sample Corrective Actions - this could be extended with real data */}
       <div>
         <h4 className="font-medium mb-3">Corrective Actions</h4>
         <div className="space-y-2">
@@ -452,7 +529,7 @@ export const ViewCAPAModal = ({ capa, onClose }) => {
       </div>
 
       {/* Progress Indicator */}
-      {capaDetails.progress && (
+      {capaDetails.progress !== undefined && (
         <div>
           <h4 className="font-medium mb-2">Progress</h4>
           <div className="flex items-center gap-3">
@@ -475,8 +552,12 @@ export const ViewCAPAModal = ({ capa, onClose }) => {
         >
           Close
         </button>
-        <button className="px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition-colors">
-          Update Progress
+        <button 
+          onClick={handleExport}
+          className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2"
+        >
+          <Download size={16} />
+          Export Details
         </button>
       </div>
     </div>
@@ -858,8 +939,431 @@ export const DeleteAuditModal = ({ audit, onClose, onConfirm }) => {
   );
 };
 
+// Edit CAPA Modal Component
+export const EditCAPAModal = ({ capa, onClose, onSave }) => {
+  const [formData, setFormData] = useState({
+    title: capa.title,
+    category: capa.category,
+    priority: capa.priority,
+    status: capa.status,
+    assignee: capa.assignee,
+    dueDate: capa.dueDate,
+    progress: capa.progress || 0,
+    description: capa.description || '',
+    rootCause: capa.rootCause || ''
+  });
+
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+
+    try {
+      // Prepare updated CAPA data
+      const updatedCAPA = {
+        title: formData.title,
+        category: formData.category,
+        priority: formData.priority,
+        status: formData.status,
+        assignee: formData.assignee,
+        dueDate: formData.dueDate,
+        progress: parseInt(formData.progress),
+        description: formData.description,
+        rootCause: formData.rootCause,
+        ...(formData.status === 'Completed' && !capa.dateCompleted && { dateCompleted: new Date().toISOString().split('T')[0] })
+      };
+
+      // Call the onSave callback with updated data (this will trigger updateCAPA in the context)
+      // This updates the global CAPA state, which automatically triggers re-renders of:
+      // 1. CAPA list items with new data
+      // 2. Statistics cards with recalculated numbers
+      // 3. Charts with updated priority/status distributions
+      // 4. Dashboard metrics and other dependent components
+      if (onSave) {
+        onSave(updatedCAPA);
+      }
+
+      // Simulate processing time for better UX
+      await new Promise(resolve => setTimeout(resolve, 800));
+      
+      // Show comprehensive success message with all updates
+      const statusMessage = `✅ CAPA Updated Successfully!\n\n` +
+        `📋 Title: ${formData.title}\n` +
+        `📂 Category: ${formData.category}\n` +
+        `⭐ Priority: ${formData.priority}\n` +
+        `📊 Status: ${formData.status}\n` +
+        `👤 Assignee: ${formData.assignee}\n` +
+        `📅 Due Date: ${formData.dueDate}\n` +
+        `📈 Progress: ${formData.progress}%\n\n` +
+        `🔄 All data has been updated in the system:\n` +
+        `• CAPA list refreshed with new information\n` +
+        `• Statistics automatically recalculated\n` +
+        `• Priority & status charts updated\n` +
+        `• Dashboard metrics synced\n` +
+        `• Overdue count updated if due date changed\n` +
+        `• Progress tracking updated for all views`;
+      
+      alert(statusMessage);
+      
+      onClose();
+    } catch (error) {
+      alert('❌ Error updating CAPA. Please try again.');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleChange = (field, value) => {
+    setFormData(prev => ({ ...prev, [field]: value }));
+  };
+
+  return (
+    <div className="space-y-6">
+      {/* Custom CSS for progress slider */}
+      <style jsx>{`
+        .slider::-webkit-slider-thumb {
+          appearance: none;
+          height: 20px;
+          width: 20px;
+          border-radius: 50%;
+          background: #3b82f6;
+          cursor: pointer;
+          border: 2px solid white;
+          box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+        .slider::-moz-range-thumb {
+          height: 20px;
+          width: 20px;
+          border-radius: 50%;
+          background: #3b82f6;
+          cursor: pointer;
+          border: 2px solid white;
+          box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+      `}</style>
+      
+      <div className="bg-orange-50 p-4 rounded-lg">
+        <h3 className="font-semibold text-orange-900 mb-2">Edit CAPA</h3>
+        <p className="text-sm text-orange-700">Update CAPA information and progress</p>
+      </div>
+
+      <form onSubmit={handleSubmit} className="space-y-4">
+        <div className="grid grid-cols-2 gap-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Title</label>
+            <input
+              type="text"
+              value={formData.title}
+              onChange={(e) => handleChange('title', e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+              required
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Category</label>
+            <select
+              value={formData.category}
+              onChange={(e) => handleChange('category', e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+            >
+              <option value="Safety">Safety</option>
+              <option value="Quality">Quality</option>
+              <option value="Equipment">Equipment</option>
+              <option value="Training">Training</option>
+              <option value="Information Security">Information Security</option>
+              <option value="Process">Process</option>
+              <option value="Documentation">Documentation</option>
+            </select>
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Priority</label>
+            <select
+              value={formData.priority}
+              onChange={(e) => handleChange('priority', e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+            >
+              <option value="Low">Low</option>
+              <option value="Medium">Medium</option>
+              <option value="High">High</option>
+              <option value="Critical">Critical</option>
+            </select>
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Status</label>
+            <select
+              value={formData.status}
+              onChange={(e) => handleChange('status', e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+            >
+              <option value="Open">Open</option>
+              <option value="In Progress">In Progress</option>
+              <option value="Pending Review">Pending Review</option>
+              <option value="Completed">Completed</option>
+              <option value="Cancelled">Cancelled</option>
+            </select>
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Assignee</label>
+            <input
+              type="text"
+              value={formData.assignee}
+              onChange={(e) => handleChange('assignee', e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+              required
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Due Date</label>
+            <input
+              type="date"
+              value={formData.dueDate}
+              onChange={(e) => handleChange('dueDate', e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+              required
+            />
+          </div>
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">Progress (%)</label>
+          <div className="space-y-3">
+            {/* Visual Progress Bar with Milestones */}
+            <div className="relative">
+              <div className="w-full bg-gray-200 rounded-full h-4 shadow-inner">
+                <div 
+                  className={`h-4 rounded-full transition-all duration-300 ${
+                    formData.progress === 100 ? 'bg-green-500' :
+                    formData.progress >= 75 ? 'bg-blue-500' :
+                    formData.progress >= 50 ? 'bg-yellow-500' :
+                    formData.progress >= 25 ? 'bg-orange-500' :
+                    'bg-red-500'
+                  }`}
+                  style={{ width: `${formData.progress}%` }}
+                ></div>
+              </div>
+              
+              {/* Milestone markers */}
+              <div className="absolute top-0 w-full h-4 flex justify-between items-center pointer-events-none">
+                {[25, 50, 75].map((milestone) => (
+                  <div 
+                    key={milestone}
+                    className={`w-1 h-6 ${
+                      formData.progress >= milestone ? 'bg-white' : 'bg-gray-400'
+                    } rounded-full shadow-sm`}
+                    style={{ marginLeft: `${milestone}%`, transform: 'translateX(-50%)' }}
+                  ></div>
+                ))}
+              </div>
+              
+              {/* Milestone labels */}
+              <div className="flex justify-between text-xs text-gray-500 mt-1">
+                <span>0%</span>
+                <span>25%</span>
+                <span>50%</span>
+                <span>75%</span>
+                <span>100%</span>
+              </div>
+            </div>
+            
+            {/* Range Slider Control */}
+            <div className="flex items-center gap-4">
+              <input
+                type="range"
+                min="0"
+                max="100"
+                value={formData.progress}
+                onChange={(e) => handleChange('progress', e.target.value)}
+                className="flex-1 h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer slider"
+                style={{
+                  background: `linear-gradient(to right, #3b82f6 0%, #3b82f6 ${formData.progress}%, #e5e7eb ${formData.progress}%, #e5e7eb 100%)`
+                }}
+              />
+              <span className="text-sm font-medium w-12 text-center bg-gray-100 px-2 py-1 rounded">
+                {formData.progress}%
+              </span>
+            </div>
+            
+            {/* Quick Progress Buttons */}
+            <div className="flex gap-2 flex-wrap">
+              {[0, 25, 50, 75, 100].map((value) => (
+                <button
+                  key={value}
+                  type="button"
+                  onClick={() => handleChange('progress', value)}
+                  className={`px-3 py-1 text-xs rounded-full border transition-colors ${
+                    formData.progress == value 
+                      ? 'bg-orange-500 text-white border-orange-500' 
+                      : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
+                  }`}
+                >
+                  {value}%
+                </button>
+              ))}
+            </div>
+            
+            {/* Progress Status Text */}
+            <div className="text-sm text-gray-600 bg-gray-50 p-2 rounded-lg">
+              {formData.progress === 0 && "🔴 Not Started - CAPA has not begun"}
+              {formData.progress > 0 && formData.progress < 25 && "🟠 Just Started - Initial actions taken"}
+              {formData.progress >= 25 && formData.progress < 50 && "🟡 In Progress - Early Stage - Foundation work underway"}
+              {formData.progress >= 50 && formData.progress < 75 && "🔵 In Progress - Mid Stage - Significant progress made"}
+              {formData.progress >= 75 && formData.progress < 100 && "🟣 In Progress - Nearly Complete - Final steps remaining"}
+              {formData.progress === 100 && "🟢 Completed - All actions finished and verified"}
+            </div>
+          </div>
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">Description</label>
+          <textarea
+            value={formData.description}
+            onChange={(e) => handleChange('description', e.target.value)}
+            rows="3"
+            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+            placeholder="Describe the CAPA in detail..."
+          />
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">Root Cause Analysis</label>
+          <textarea
+            value={formData.rootCause}
+            onChange={(e) => handleChange('rootCause', e.target.value)}
+            rows="3"
+            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+            placeholder="Describe the root cause analysis..."
+          />
+        </div>
+
+        <div className="flex justify-end space-x-3 pt-4 border-t">
+          <button
+            type="button"
+            onClick={onClose}
+            className="px-4 py-2 text-gray-700 bg-gray-200 rounded-lg hover:bg-gray-300 transition-colors"
+          >
+            Cancel
+          </button>
+          <button
+            type="submit"
+            disabled={isSubmitting}
+            className={`px-4 py-2 rounded-lg font-medium transition-colors flex items-center gap-2 ${
+              isSubmitting 
+                ? 'bg-gray-400 cursor-not-allowed text-white' 
+                : 'bg-orange-600 text-white hover:bg-orange-700'
+            }`}
+          >
+            {isSubmitting ? (
+              <>
+                <div className="animate-spin w-4 h-4 border-2 border-white border-t-transparent rounded-full"></div>
+                Updating CAPA & Tables...
+              </>
+            ) : (
+              'Save Changes'
+            )}
+          </button>
+        </div>
+      </form>
+    </div>
+  );
+};
+
+// Delete CAPA Confirmation Modal
+export const DeleteCAPAModal = ({ capa, onClose, onConfirm }) => {
+  const [isDeleting, setIsDeleting] = useState(false);
+
+  const handleDelete = async () => {
+    setIsDeleting(true);
+
+    try {
+      // Simulate processing time for better UX
+      await new Promise(resolve => setTimeout(resolve, 1000));
+
+      // Call the onConfirm callback (this will trigger deleteCAPA in the context)
+      if (onConfirm) {
+        onConfirm(capa.id); // Pass the CAPA ID for deletion
+      }
+
+      // Show success message
+      alert(`✅ CAPA Deleted Successfully!\n\nTitle: ${capa.title}\nCategory: ${capa.category}\nAssignee: ${capa.assignee}\n\nThe CAPA has been permanently removed from the system.`);
+      
+      onClose();
+    } catch (error) {
+      alert('❌ Error deleting CAPA. Please try again.');
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
+  return (
+    <div className="space-y-6">
+      <div className="bg-red-50 p-4 rounded-lg">
+        <h3 className="font-semibold text-red-900 mb-2">Delete CAPA</h3>
+        <p className="text-sm text-red-700">This action cannot be undone</p>
+      </div>
+
+      <div className="space-y-4">
+        <p className="text-gray-700">
+          Are you sure you want to delete the following CAPA?
+        </p>
+        
+        <div className="bg-gray-50 p-4 rounded-lg">
+          <div className="grid grid-cols-2 gap-3 text-sm">
+            <div><strong>Title:</strong> {capa.title}</div>
+            <div><strong>Category:</strong> {capa.category}</div>
+            <div><strong>Priority:</strong> {capa.priority}</div>
+            <div><strong>Status:</strong> {capa.status}</div>
+            <div><strong>Assignee:</strong> {capa.assignee}</div>
+            <div><strong>Due Date:</strong> {capa.dueDate}</div>
+          </div>
+        </div>
+
+        <div className="bg-amber-50 border border-amber-200 p-4 rounded-lg">
+          <div className="flex items-start">
+            <AlertTriangle className="text-amber-600 mr-2 mt-0.5" size={20} />
+            <div>
+              <h4 className="font-medium text-amber-800 mb-1">Warning</h4>
+              <p className="text-sm text-amber-700">
+                Deleting this CAPA will permanently remove all associated data, progress information, and action history. 
+                This action cannot be undone and may affect compliance tracking.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div className="flex justify-end space-x-3 pt-4 border-t">
+        <button
+          onClick={onClose}
+          className="px-4 py-2 text-gray-700 bg-gray-200 rounded-lg hover:bg-gray-300 transition-colors"
+        >
+          Cancel
+        </button>
+        <button
+          onClick={handleDelete}
+          disabled={isDeleting}
+          className={`px-4 py-2 rounded-lg font-medium transition-colors flex items-center gap-2 ${
+            isDeleting 
+              ? 'bg-gray-400 cursor-not-allowed text-white' 
+              : 'bg-red-600 text-white hover:bg-red-700'
+          }`}
+        >
+          {isDeleting ? (
+            <>
+              <div className="animate-spin w-4 h-4 border-2 border-white border-t-transparent rounded-full"></div>
+              Deleting...
+            </>
+          ) : (
+            'Delete CAPA'
+          )}
+        </button>
+      </div>
+    </div>
+  );
+};
+
 // Utility function to handle all actions
-export const handleAction = (type, action, item, openModal, closeModal, updateAudit, deleteAudit) => {
+export const handleAction = (type, action, item, openModal, closeModal, updateAudit, deleteAudit, updateCAPA, deleteCAPA) => {
   switch (`${type}_${action}`) {
     case 'audit_view':
       openModal('viewAudit', <ViewAuditModal audit={item} onClose={() => closeModal('viewAudit')} />, 'Audit Details');
@@ -879,15 +1383,21 @@ export const handleAction = (type, action, item, openModal, closeModal, updateAu
       />, 'Delete Audit');
       break;
     case 'capa_view':
-      openModal('viewCAPA', <ViewCAPAModal capa={item} onClose={() => closeModal('viewCAPA')} />);
+      openModal('viewCAPA', <ViewCAPAModal capa={item} onClose={() => closeModal('viewCAPA')} />, 'CAPA Details');
       break;
     case 'capa_edit':
-      alert(`Editing CAPA "${item.title}". Edit form would open here.`);
+      openModal('editCAPA', <EditCAPAModal 
+        capa={item} 
+        onClose={() => closeModal('editCAPA')}
+        onSave={(updatedData) => updateCAPA(item.id, updatedData)}
+      />, 'Edit CAPA');
       break;
     case 'capa_delete':
-      if (window.confirm(`Are you sure you want to delete CAPA "${item.title}"? This action cannot be undone.`)) {
-        alert(`CAPA "${item.title}" has been deleted.`);
-      }
+      openModal('deleteCAPA', <DeleteCAPAModal 
+        capa={item} 
+        onClose={() => closeModal('deleteCAPA')}
+        onConfirm={(capaId) => deleteCAPA(capaId)}
+      />, 'Delete CAPA');
       break;
     case 'reports_download':
       openModal('downloadProgress', <DownloadProgressModal report={item} onClose={() => closeModal('downloadProgress')} />);
